@@ -1,0 +1,48 @@
+.panico-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+
+.panico-card {
+  width: 100%;
+  max-width: 760px;
+  background: #ffffff;
+  border-radius: 26px;
+  padding: 42px;
+  text-align: center;
+  box-shadow: 0 12px 30px rgba(156, 74, 143, 0.12);
+}
+
+.panico-icon {
+  font-size: 54px;
+  margin-bottom: 12px;
+}
+
+.panico-card h2 {
+  color: #9c4a8f;
+}
+
+.panico-card p {
+  color: #3d2b3f;
+  line-height: 1.6;
+}
+
+.panico-btn {
+  background: #d63031;
+  color: #fff;
+  border: none;
+  border-radius: 18px;
+  padding: 16px 34px;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.panico-alerta {
+  display: block;
+  margin-top: 22px;
+  color: #777;
+  font-size: 13px;
+}

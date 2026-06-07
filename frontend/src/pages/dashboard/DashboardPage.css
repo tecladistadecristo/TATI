@@ -1,0 +1,274 @@
+/* ===================== LAYOUT ===================== */
+
+.user-panel {
+  display: flex;
+  width: 100%;
+  min-height: calc(100vh - 110px);
+}
+
+.panel-main-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.content-box {
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 24px;
+  min-height: calc(100vh - 150px);
+  box-shadow: 0 10px 30px rgba(140, 52, 122, 0.08);
+  border: 1px solid rgba(156, 74, 143, 0.08);
+}
+
+/* ===================== SIDEBAR ===================== */
+
+.dashboard-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  padding: 6px 0 18px;
+}
+
+/* ===================== CARD PERFIL ===================== */
+
+.selected-profile-card {
+  background: linear-gradient(180deg, #a53d91 0%, #b85da5 100%);
+  color: #ffffff;
+  border-radius: 28px;
+  padding: 22px 18px 20px;
+  box-shadow: 0 12px 28px rgba(124, 39, 111, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  text-align: center;
+}
+
+.selected-profile-card .section-label {
+  margin: 0 0 10px;
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.selected-profile-card h2 {
+  margin: 0 0 12px;
+  font-size: 2rem;
+  line-height: 1.05;
+  font-weight: 800;
+  color: #1c0f19;
+}
+
+.selected-profile-card p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.96);
+}
+
+/* ===================== PLANO ===================== */
+
+.plan-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 18px;
+  padding: 12px 16px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(4px);
+}
+
+/* ===================== BOTÃO PRINCIPAL ===================== */
+
+.primary-btn {
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px 18px;
+  border: none;
+  border-radius: 18px;
+  background: #ffffff;
+  color: #9b3b8d;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0 6px 14px rgba(70, 15, 61, 0.2);
+  transition: all 0.2s ease;
+}
+
+.primary-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(70, 15, 61, 0.22);
+  background: #e5f323;
+  color: #5c2a00;
+}
+
+/* ===================== BOTÕES MENU ===================== */
+
+.panel-actions-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.panel-action-card {
+  width: 100%;
+  border: none;
+  outline: none;
+  text-align: center;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 18px 20px;
+  border-radius: 22px;
+
+  background: linear-gradient(180deg, #a74897 0%, #c36cb2 100%);
+  color: #ffffff;
+
+  font-size: 1.08rem;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  box-shadow: 0 10px 20px rgba(145, 54, 128, 0.16);
+
+  transition: all 0.2s ease;
+}
+
+/* HOVER AMARELO 🔥 */
+.panel-action-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 24px rgba(145, 54, 128, 0.22);
+  background: #e5f323;
+  color: #5c2a00;
+}
+
+/* BOTÃO ATIVO */
+.panel-action-card.active-card {
+  background: #ffffff;
+  color: #8f2f83;
+  border: 2px solid #2e2230;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.06);
+}
+
+/* ATIVO + HOVER */
+.panel-action-card.active-card:hover {
+  background: #e5f323;
+  color: #5c2a00;
+}
+
+/* DESABILITADO */
+.panel-action-card:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ===================== BLOQUEIO ===================== */
+
+.blocked-box {
+  background: linear-gradient(180deg, #fff8fc 0%, #fff 100%);
+  border: 1px solid rgba(156, 74, 143, 0.18);
+  border-radius: 24px;
+  padding: 28px;
+}
+
+.blocked-box h3 {
+  margin: 0 0 10px;
+  font-size: 1.4rem;
+  color: #8f2f83;
+}
+
+.blocked-box p {
+  margin: 0;
+  color: #5f4a5a;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.unlock-btn {
+  margin-top: 18px;
+  border: none;
+  border-radius: 16px;
+  padding: 14px 18px;
+  background: linear-gradient(180deg, #9f3d90 0%, #b95aa6 100%);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 10px 20px rgba(145, 54, 128, 0.18);
+}
+
+.unlock-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 24px rgba(145, 54, 128, 0.22);
+}
+
+/* ===================== CONTEÚDO ===================== */
+
+.content-box h3 {
+  margin-top: 0;
+  color: #8f2f83;
+  font-size: 1.35rem;
+}
+
+.content-box p {
+  color: #5a4f59;
+  line-height: 1.6;
+}
+
+/* ===================== RESPONSIVO ===================== */
+
+@media (max-width: 1100px) {
+  .content-box {
+    padding: 18px;
+    border-radius: 22px;
+  }
+
+  .selected-profile-card {
+    border-radius: 24px;
+  }
+
+  .panel-action-card {
+    border-radius: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  .user-panel {
+    min-height: auto;
+  }
+
+  .content-box {
+    min-height: auto;
+    padding: 16px;
+  }
+
+  .selected-profile-card {
+    padding: 18px 16px;
+  }
+
+  .selected-profile-card h2 {
+    font-size: 1.6rem;
+  }
+
+  .panel-action-card {
+    padding: 16px 16px;
+    font-size: 1rem;
+    border-radius: 18px;
+  }
+
+  .primary-btn {
+    padding: 13px 16px;
+    border-radius: 16px;
+  }
+}

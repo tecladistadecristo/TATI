@@ -1,0 +1,129 @@
+.agenda-container {
+  width: 100%;
+  padding: 30px;
+  display: flex;
+  justify-content: center;
+}
+
+.agenda-card {
+  width: 100%;
+  max-width: 1000px;
+  min-height: 550px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 34px;
+  box-shadow: 0 12px 30px rgba(156, 74, 143, 0.12);
+}
+
+.agenda-header h2 {
+  color: #9c4a8f;
+  font-size: 28px;
+  margin: 0;
+}
+
+.agenda-header p {
+  color: #555;
+  margin-top: 6px;
+}
+
+.agenda-form {
+  margin-top: 25px;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 14px;
+}
+
+.agenda-form input,
+.agenda-form textarea {
+  border: 1px solid #ead9ec;
+  border-radius: 14px;
+  padding: 13px;
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+}
+
+.agenda-form textarea {
+  grid-column: span 3;
+  min-height: 80px;
+  resize: vertical;
+}
+
+.agenda-form button {
+  grid-column: span 3;
+  background: #9c4a8f;
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.agenda-form button:hover {
+  background: #f2c94c;
+  color: #3b2340;
+}
+
+.agenda-lista {
+  margin-top: 30px;
+  display: grid;
+  gap: 14px;
+}
+
+.agenda-vazia {
+  text-align: center;
+  color: #777;
+}
+
+.evento-card {
+  background: #fbf7fc;
+  border: 1px solid #ead9ec;
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.evento-card h3 {
+  margin: 0 0 6px;
+  color: #9c4a8f;
+}
+
+.evento-card p {
+  margin: 0 0 6px;
+  color: #333;
+  font-weight: 600;
+}
+
+.evento-card span {
+  color: #666;
+  font-size: 14px;
+}
+
+.evento-card button {
+  background: #d63031;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+@media (max-width: 800px) {
+  .agenda-form {
+    grid-template-columns: 1fr;
+  }
+
+  .agenda-form textarea,
+  .agenda-form button {
+    grid-column: span 1;
+  }
+
+  .evento-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -1,0 +1,211 @@
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background: #f3eef5;
+  font-family: Arial, sans-serif;
+}
+
+/* SIDEBAR */
+.app-sidebar {
+  width: 220px;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #8f3f85, #6f2f67);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  gap: 12px;
+}
+
+/* LOGO */
+.app-brand {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px;
+}
+
+.app-brand img {
+  width: 110px;
+  height: auto;
+  opacity: 0.9;
+}
+
+/* BOTÃO SAIR */
+.logout-btn {
+  margin-top: 10px;
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  padding: 10px;
+  background: #ffffff;
+  color: #8f3f85;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.08);
+}
+
+.logout-btn:hover {
+  background: #f2c94c;
+  color: #3b2340;
+}
+
+/* CARD PERFIL */
+.selected-profile-card {
+  width: 100%;
+  background: linear-gradient(180deg, #b85aa9, #9c4a8f);
+  border-radius: 20px;
+  padding: 18px;
+  text-align: center;
+  color: #fff;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* 🔥 TEXTO REMOVIDO (sem quebrar estrutura) */
+.selected-profile-card p {
+  display: none;
+}
+
+/* TITULO PERFIL */
+.selected-profile-card h2 {
+  font-size: 22px;
+  margin: 6px 0;
+  color: #000;
+  font-weight: 800;
+}
+
+/* PLANO */
+.plan-badge {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 10px;
+  font-size: 13px;
+  margin: 12px 0;
+}
+
+/* BOTÃO TROCAR PERFIL */
+.primary-btn {
+  background: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 12px;
+  font-weight: 700;
+  color: #8f3f85;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.primary-btn:hover {
+  background: #f2c94c;
+  color: #3b2340;
+}
+
+/* MENU */
+.panel-actions-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+/* BOTÕES MENU */
+.panel-action-card {
+  background: linear-gradient(180deg, #b85aa9, #9c4a8f);
+  border: none;
+  border-radius: 14px;
+  padding: 12px;
+  font-weight: 600;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* HOVER */
+.panel-action-card:hover {
+  background: #f2c94c;
+  color: #3b2340;
+  transform: scale(1.02);
+}
+
+/* ATIVO */
+.active-card {
+  background: #fff;
+  color: #8f3f85;
+  border: 2px solid #8f3f85;
+}
+
+/* MAIN */
+.app-main {
+  flex: 1;
+  width: calc(100% - 220px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* HEADER */
+.app-header {
+  width: 100%;
+  background: #ffffff;
+  padding: 20px 28px;
+  border-bottom: 1px solid #e9e3eb;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.app-header h1 {
+  margin: 0;
+  color: #8f3f85;
+  font-size: 24px;
+}
+
+/* CONTEÚDO */
+.app-content {
+  width: 100%;
+  padding: 24px;
+}
+
+/* RESPONSIVO */
+@media (max-width: 900px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .app-sidebar {
+    width: 100%;
+    min-width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .app-main {
+    width: 100%;
+  }
+
+  .panel-actions-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .panel-action-card {
+    flex: 1 1 120px;
+  }
+
+  .app-content {
+    padding: 18px;
+  }
+}

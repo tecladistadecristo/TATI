@@ -1,0 +1,339 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap");
+
+:root {
+  --tati-purple: #9c4a8f;
+  --tati-green: #4caf50;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.cracha-page {
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.cracha-empty {
+  background: #fff;
+  width: 100%;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.05);
+}
+
+.cracha-empty h3 {
+  margin-top: 0;
+  color: #8f3f85;
+}
+
+.cracha-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cracha-btn {
+  padding: 12px 18px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.12);
+}
+
+.cracha-btn-print {
+  background: var(--tati-purple);
+  color: white;
+}
+
+.cracha-btn-mini {
+  background: #2d3436;
+  color: white;
+}
+
+.cracha-horizontal {
+  width: 85mm;
+  height: 70mm;
+  background: #ffffff;
+  border-radius: 5mm;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  border: 0.5px solid #ddd;
+}
+
+.topo {
+  height: 15mm;
+  min-height: 15mm;
+  background: var(--tati-purple);
+  display: flex;
+  align-items: center;
+  padding: 0 5mm;
+  color: white;
+}
+
+.logo-topo {
+  height: 9mm;
+  margin-right: 3mm;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+.topo-texto p {
+  margin: 0;
+  font-size: 5pt;
+  font-weight: 400;
+  opacity: 0.95;
+  color: #ffffff;
+}
+
+.meio {
+  height: 26mm;
+  min-height: 26mm;
+  display: flex;
+  align-items: center;
+  padding: 2mm 6mm;
+  gap: 4mm;
+  background: #ffffff;
+}
+
+.dados-centro {
+  flex: 1;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.nome-beneficiario {
+  font-size: 13pt;
+  font-weight: 800;
+  color: var(--tati-purple);
+  text-transform: uppercase;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.idade-beneficiario {
+  font-size: 8pt;
+  font-weight: 700;
+  color: var(--tati-purple);
+  opacity: 0.9;
+  margin: 1mm 0;
+  display: block;
+}
+
+.apelido-beneficiario {
+  font-size: 11pt;
+  font-weight: 700;
+  color: var(--tati-green);
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+
+.qr-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 28mm;
+}
+
+.qr-canvas-box {
+  background: #ffffff;
+  padding: 1mm;
+  border: 1px solid #eee;
+  border-radius: 2mm;
+  width: 24mm;
+  height: 24mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-canvas-box canvas {
+  width: 22mm !important;
+  height: 22mm !important;
+  display: block;
+}
+
+.qr-legenda {
+  font-size: 4pt;
+  font-weight: 700;
+  color: #999;
+  margin-top: 1mm;
+}
+
+.rodape {
+  height: 18mm;
+  min-height: 18mm;
+  background: var(--tati-green);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2mm 2mm 1.5mm;
+  gap: 0.8mm;
+  overflow: hidden;
+}
+
+.rodape strong {
+  font-size: 6pt;
+  text-transform: uppercase;
+  margin: 0;
+  line-height: 1;
+  color: #ffffff;
+}
+
+.rodape .tel {
+  font-size: 10pt;
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+  color: #ffffff;
+  display: block;
+}
+
+.rodape .resp {
+  font-size: 5.3pt;
+  font-weight: 700;
+  opacity: 1;
+  text-transform: uppercase;
+  margin: 0;
+  line-height: 1;
+  color: #ffffff;
+  display: block;
+}
+
+.mini-print-sheet {
+  display: none;
+}
+
+.mini-qr-row {
+  display: flex;
+  gap: 6mm;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.mini-qr-item {
+  width: 30mm;
+  height: 30mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0.3mm dashed #999;
+  padding: 1.5mm;
+  background: #fff;
+}
+
+.mini-qr-box {
+  width: 30mm;
+  height: 30mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mini-qr-box canvas {
+  width: 27mm !important;
+  height: 27mm !important;
+  display: block;
+}
+
+@page {
+  size: auto;
+  margin: 6mm;
+}
+
+@media print {
+  html,
+  body {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .carteirinha-print-area,
+  .carteirinha-print-area * {
+    visibility: visible !important;
+  }
+
+  .carteirinha-print-area {
+    position: absolute;
+    left: 10mm;
+    top: 10mm;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+    display: block !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  body.print-cracha .cracha-horizontal {
+  display: flex !important;
+  width: 85mm !important;
+  height: 57mm !important;
+  min-width: 85mm !important;
+  min-height: 57mm !important;
+  max-width: 85mm !important;
+  max-height: 57mm !important;
+  box-shadow: none !important;
+  border: 0.5px solid #ddd !important;
+  overflow: hidden !important;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+body.print-cracha .meio {
+  height: 26mm !important;
+  min-height: 26mm !important;
+  max-height: 26mm !important;
+}
+
+body.print-cracha .rodape {
+  height: 18mm !important;
+  min-height: 18mm !important;
+  max-height: 18mm !important;
+  overflow: hidden !important;
+  padding: 2mm 2mm 1.5mm !important;
+  gap: 0.8mm !important;
+}
+
+  body.print-cracha .meio {
+    background: #ffffff !important;
+  }
+
+  body.print-cracha .mini-print-sheet {
+    display: none !important;
+  }
+
+  body.print-mini .cracha-horizontal {
+    display: none !important;
+  }
+
+  body.print-mini .mini-print-sheet {
+    display: block !important;
+    width: 100%;
+    margin: 0 auto;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
