@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import AppLayout from "../../components/AppLayout";
-import FichaFuncionalView from "./FichaFuncionalView";
+import FichaFuncionalView from "../dashboard/FichaFuncionalView";
 import { supabase } from "../../lib/supabase";
 import "./DashboardPage.css";
 import "./FichaFuncionalView.css";

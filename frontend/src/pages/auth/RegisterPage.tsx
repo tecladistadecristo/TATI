@@ -37,15 +37,18 @@ export default function RegisterPage() {
   const [showRepetirSenha, setShowRepetirSenha] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const documentoLabel = useMemo(() => {
-    return tipoCadastro === "individual" ? "CPF" : "CNPJ";
-  }, [tipoCadastro]);
+  const documentoLabel = useMemo(
+    () => (tipoCadastro === "individual" ? "CPF" : "CNPJ"),
+    [tipoCadastro]
+  );
 
-  const documentoPlaceholder = useMemo(() => {
-    return tipoCadastro === "individual"
-      ? "000.000.000-00"
-      : "00.000.000/0000-00";
-  }, [tipoCadastro]);
+  const documentoPlaceholder = useMemo(
+    () =>
+      tipoCadastro === "individual"
+        ? "000.000.000-00"
+        : "00.000.000/0000-00",
+    [tipoCadastro]
+  );
 
   function handleDocumentoChange(value: string) {
     if (tipoCadastro === "individual") {
@@ -58,7 +61,7 @@ export default function RegisterPage() {
   const senhasIguais =
     senha.length > 0 && repetirSenha.length > 0 && senha === repetirSenha;
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (loading) return;
@@ -91,24 +94,23 @@ export default function RegisterPage() {
 
       const telefoneTemporario = "";
 
-      // 1) verificar se já existe e-mail
-      const { data: emailExistente, error: emailCheckError } = await supabase
-        .from("users")
-        .select("id")
-        .eq("email", emailNormalizado)
-        .maybeSingle();
+      const { data: usuarioExistente, error: usuarioCheckError } =
+        await supabase
+          .from("users")
+          .select("id, email, auth_user_id")
+          .eq("email", emailNormalizado)
+          .maybeSingle();
 
-      if (emailCheckError) {
+      if (usuarioCheckError) {
         alert("Erro ao verificar e-mail.");
         return;
       }
 
-      if (emailExistente) {
-        alert("Este e-mail já está cadastrado.");
+      if (usuarioExistente?.auth_user_id) {
+        alert("Este e-mail já está cadastrado. Faça login para continuar.");
         return;
       }
 
-      // 2) verificar CPF/CNPJ
       if (tipoCadastro === "individual") {
         const { data: cpfExistente, error: cpfCheckError } = await supabase
           .from("users")
@@ -143,10 +145,15 @@ export default function RegisterPage() {
         }
       }
 
-      // 3) criar no auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: emailNormalizado,
         password: senha,
+        options: {
+          data: {
+            nome: nomeTemporario,
+            tipo_usuario: tipoUsuario,
+          },
+        },
       });
 
       if (authError) {
@@ -168,41 +175,53 @@ export default function RegisterPage() {
 
       if (loginError) {
         alert(
-          "Cadastro realizado, mas não foi possível iniciar a sessão automaticamente. Faça login para continuar."
+          "Cadastro criado, mas não foi possível iniciar a sessão automaticamente. Faça login para continuar."
         );
         navigate("/login");
         return;
       }
 
-      // 4) gravar na tabela users
-      const { error: userError } = await supabase.from("users").insert({
-        auth_user_id: authUserId,
-        nome: nomeTemporario,
-        email: emailNormalizado,
-        telefone: telefoneTemporario,
-        tipo_usuario: tipoUsuario,
-        ativo: true,
-        onboarding_status: "escolher_plano",
-        cpf: tipoCadastro === "individual" ? documentoNormalizado : null,
-        cnpj: tipoCadastro === "individual" ? null : documentoNormalizado,
-      });
+      if (usuarioExistente?.id) {
+        const { error: updateUserError } = await supabase
+          .from("users")
+          .update({
+            auth_user_id: authUserId,
+            nome: nomeTemporario,
+            email: emailNormalizado,
+            telefone: telefoneTemporario,
+            tipo_usuario: tipoUsuario,
+            ativo: true,
+            onboarding_status: "escolher_plano",
+            cpf: tipoCadastro === "individual" ? documentoNormalizado : null,
+            cnpj: tipoCadastro === "individual" ? null : documentoNormalizado,
+          })
+          .eq("id", usuarioExistente.id);
 
-      if (userError) {
-        console.error("Erro ao gravar em users:", userError);
-        alert(userError.message);
-        return;
+        if (updateUserError) {
+          console.error("Erro ao atualizar users:", updateUserError);
+          alert(updateUserError.message);
+          return;
+        }
+      } else {
+        const { error: insertUserError } = await supabase.from("users").insert({
+          auth_user_id: authUserId,
+          nome: nomeTemporario,
+          email: emailNormalizado,
+          telefone: telefoneTemporario,
+          tipo_usuario: tipoUsuario,
+          ativo: true,
+          onboarding_status: "escolher_plano",
+          cpf: tipoCadastro === "individual" ? documentoNormalizado : null,
+          cnpj: tipoCadastro === "individual" ? null : documentoNormalizado,
+        });
+
+        if (insertUserError) {
+          console.error("Erro ao gravar em users:", insertUserError);
+          alert(insertUserError.message);
+          return;
+        }
       }
 
-      const { data: usuarioCriado, error: confirmUserError } = await supabase
-        .from("users")
-        .select("*")
-        .eq("email", emailNormalizado)
-        .maybeSingle();
-
-      console.log("Usuário gravado em users:", usuarioCriado, confirmUserError);
-
-      // 5) criar assinatura inicial pendente.
-      // O usuário NÃO deve ir para o dashboard antes de escolher plano/pagar.
       const { error: assinaturaError } = await supabase
         .from("assinaturas")
         .insert({

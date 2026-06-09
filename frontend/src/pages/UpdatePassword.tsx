@@ -1,3 +1,4 @@
+import React from "react";
 import { useState } from "react"
 import { supabase } from "../lib/supabase"
 
@@ -5,7 +6,7 @@ export default function UpdatePassword() {
   const [password, setPassword] = useState("")
   const [msg, setMsg] = useState("")
 
-  async function handleUpdate(e) {
+  async function handleUpdate(e: React.FormEvent) {
     e.preventDefault()
 
     const { error } = await supabase.auth.updateUser({
@@ -25,7 +26,7 @@ export default function UpdatePassword() {
         type="password"
         placeholder="Nova senha"
         value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
       />
 
       <button>Atualizar senha</button>

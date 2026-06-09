@@ -1,178 +1,89 @@
-import { useMemo } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useMemo, useState } from "react";
 import AppLayout from "../../components/AppLayout";
-import { supabase } from "../../lib/supabase";
 
-function useQuery() {
-  return new URLSearchParams(useLocation().search);
-}
-
-type PlanoItem = {
+type Plano = {
   nome: string;
+  id: "trimestral" | "semestral" | "anual";
+  periodo: string;
   descricao: string;
   preco: string;
+  equivalente: string;
+  destaque?: boolean;
   destino: string;
-  tipo: "individual" | "igreja" | "escola";
-  duracao_dias: number;
-  funcoes_limitadas?: boolean;
 };
 
 export default function PlansPage() {
-  const query = useQuery();
-  const navigate = useNavigate();
-  const tipo = query.get("tipo");
+  const [carregandoPlano, setCarregandoPlano] = useState<string | null>(null);
 
-  const planos = useMemo<PlanoItem[]>(() => {
-    if (tipo === "individual") {
-      return [
+  const planos = useMemo<Plano[]>(() => {
+    return [
+      {
+        nome: "Trimestral",
+        id: "trimestral",
+        periodo: "3 meses de acesso",
+        descricao:
+          "Ideal para conhecer a TATI e organizar até 2 fichas funcionais com QR Code individual.",
+        preco: "R$ 89,90",
+        equivalente: "Equivale a R$ 29,97/mês",
+        destino: "/dashboard?etapa=ficha-funcional",
+      },
+      {
+        nome: "Semestral",
+        id: "semestral",
+        periodo: "6 meses de acesso",
+        descricao:
+          "Mais continuidade no cuidado, com até 2 fichas funcionais, atualizações ilimitadas e acesso completo.",
+        preco: "R$ 149,90",
+        equivalente: "Equivale a R$ 24,98/mês",
+        destino: "/dashboard?etapa=ficha-funcional",
+      },
+      {
+        nome: "Anual",
+        id: "anual",
+        periodo: "12 meses de acesso",
+        descricao:
+          "Melhor custo-benefício para manter as informações sempre atualizadas, seguras e acessíveis.",
+        preco: "R$ 279,99",
+        equivalente: "Equivale a R$ 23,33/mês",
+        destaque: true,
+        destino: "/dashboard?etapa=ficha-funcional",
+      },
+    ];
+  }, []);
+
+  async function handleEscolherPlano(plano: Plano) {
+    try {
+      setCarregandoPlano(plano.id);
+      localStorage.setItem("plano_escolhido", JSON.stringify(plano));
+
+      const response = await fetch(
+        "https://teste.somostati.com.br/api/payments/create",
         {
-          nome: "Gratuito",
-          descricao: "30 dias de uso com funções limitadas.",
-          preco: "R$ 0,00",
-          destino: "/dashboard?etapa=ficha-funcional",
-          tipo: "individual",
-          duracao_dias: 30,
-          funcoes_limitadas: true,
-        },
-        {
-          nome: "Trimestral",
-          descricao: "90 dias com recursos ampliados.",
-          preco: "R$ 59,90",
-          destino: "/dashboard?etapa=ficha-funcional",
-          tipo: "individual",
-          duracao_dias: 90,
-        },
-        {
-          nome: "Semestral",
-          descricao: "120 dias com melhor custo-benefício.",
-          preco: "R$ 109,90",
-          destino: "/dashboard?etapa=ficha-funcional",
-          tipo: "individual",
-          duracao_dias: 120,
-        },
-      ];
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            plano: plano.id,
+            userId: "teste-user-001",
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.init_point) {
+        alert("Não foi possível iniciar o pagamento. Tente novamente.");
+        return;
+      }
+
+      window.location.href = data.init_point;
+    } catch (error) {
+      console.error("Erro ao iniciar pagamento:", error);
+      alert("Erro ao iniciar pagamento.");
+    } finally {
+      setCarregandoPlano(null);
     }
-
-    if (tipo === "igreja") {
-      return [
-        {
-          nome: "Plano Igreja",
-          descricao: "20 fichas por 180 dias.",
-          preco: "R$ 1.099,90",
-          destino: "/cadastro-institucional?tipo=igreja",
-          tipo: "igreja",
-          duracao_dias: 180,
-        },
-      ];
-    }
-
-    if (tipo === "escola") {
-      return [
-        {
-          nome: "Plano Escola",
-          descricao: "50 fichas por 180 dias.",
-          preco: "R$ 2.399,99",
-          destino: "/cadastro-institucional?tipo=escola",
-          tipo: "escola",
-          duracao_dias: 180,
-        },
-      ];
-    }
-
-    return [];
-  }, [tipo]);
-
-  async function handleEscolherPlano(plano: PlanoItem) {
-    const cadastroInicial = localStorage.getItem("cadastro_inicial");
-
-    if (!cadastroInicial) {
-      alert("Cadastro inicial não encontrado.");
-      return;
-    }
-
-    const cadastro = JSON.parse(cadastroInicial);
-
-    const { data: usuario, error: userError } = await supabase
-      .from("users")
-      .select("id, email")
-      .eq("email", cadastro.email)
-      .maybeSingle();
-
-    if (userError || !usuario) {
-      alert("Usuário não encontrado para vincular o plano.");
-      return;
-    }
-
-    const { data: planoDb, error: planoError } = await supabase
-      .from("plans")
-      .select("id, nome, duracao_dias")
-      .eq("nome", plano.nome)
-      .maybeSingle();
-
-    if (planoError || !planoDb) {
-      alert("Plano não encontrado no banco.");
-      return;
-    }
-
-    const hoje = new Date();
-    const vencimento = new Date();
-    vencimento.setDate(hoje.getDate() + plano.duracao_dias);
-
-    const { error: deleteOldError } = await supabase
-      .from("subscriptions")
-      .delete()
-      .eq("user_id", usuario.id)
-      .in("status", ["ativa", "cortesia"]);
-
-    if (deleteOldError) {
-      alert("Erro ao limpar assinatura anterior.");
-      return;
-    }
-
-    const { error: subscriptionError } = await supabase
-      .from("subscriptions")
-      .insert({
-        user_id: usuario.id,
-        plan_id: planoDb.id,
-        status: plano.nome === "Gratuito" ? "cortesia" : "ativa",
-        data_inicio: hoje.toISOString().slice(0, 10),
-        data_fim: vencimento.toISOString().slice(0, 10),
-        cortesia_dias: plano.nome === "Gratuito" ? 30 : 0,
-      });
-
-    if (subscriptionError) {
-      alert(subscriptionError.message);
-      return;
-    }
-
-    const novoOnboarding =
-      plano.tipo === "individual"
-        ? "preencher_ficha_funcional"
-        : "preencher_ficha_institucional";
-
-    const { error: updateUserError } = await supabase
-      .from("users")
-      .update({
-        onboarding_status: novoOnboarding,
-      })
-      .eq("id", usuario.id);
-
-    if (updateUserError) {
-      alert("Erro ao atualizar etapa do usuário.");
-      return;
-    }
-
-    const planoEscolhido = {
-      ...plano,
-      data_inicio: hoje.toISOString(),
-      data_fim: vencimento.toISOString(),
-      status: plano.nome === "Gratuito" ? "cortesia" : "ativa",
-      onboarding_status: novoOnboarding,
-    };
-
-    localStorage.setItem("plano_escolhido", JSON.stringify(planoEscolhido));
-
-    navigate(plano.destino);
   }
 
   return (
@@ -181,96 +92,179 @@ export default function PlansPage() {
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: "20px",
+          gap: "22px",
           width: "100%",
         }}
       >
         <div
           style={{
             background: "#fff",
-            borderRadius: "22px",
-            padding: "24px",
-            boxShadow: "0 10px 28px rgba(0,0,0,0.05)",
+            borderRadius: "24px",
+            padding: "28px",
+            boxShadow: "0 10px 28px rgba(0,0,0,0.06)",
           }}
         >
-          <h2 style={{ marginTop: 0, color: "#8f3f85" }}>Planos disponíveis</h2>
-          <p style={{ marginBottom: 0 }}>
-            {tipo === "individual" &&
-              "Escolha um plano individual. Depois disso, você seguirá para a ficha funcional."}
-            {tipo === "igreja" &&
-              "Escolha o plano da igreja para continuar o cadastro institucional."}
-            {tipo === "escola" &&
-              "Escolha o plano da escola para continuar o cadastro institucional."}
+          <h2
+            style={{
+              marginTop: 0,
+              marginBottom: "10px",
+              color: "#8f3f85",
+            }}
+          >
+            Escolha seu plano TATI
+          </h2>
+
+          <p
+            style={{
+              marginBottom: 0,
+              color: "#555",
+              lineHeight: 1.7,
+            }}
+          >
+            Todos os planos incluem até <strong>2 fichas funcionais</strong>, QR
+            Code individual, atualizações ilimitadas, compartilhamento seguro e
+            acesso completo à plataforma TATI.
           </p>
         </div>
 
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-            gap: "18px",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "20px",
           }}
         >
           {planos.map((plano) => (
             <div
-              key={plano.nome}
+              key={plano.id}
               style={{
+                position: "relative",
                 background: "#fff",
-                borderRadius: "22px",
-                padding: "24px",
-                boxShadow: "0 10px 28px rgba(0,0,0,0.05)",
-                border:
-                  plano.nome === "Gratuito"
-                    ? "2px solid #e8ddea"
-                    : "2px solid transparent",
+                borderRadius: "24px",
+                padding: "26px",
+                boxShadow: plano.destaque
+                  ? "0 14px 34px rgba(143,63,133,0.22)"
+                  : "0 10px 28px rgba(0,0,0,0.06)",
+                border: plano.destaque
+                  ? "2px solid #8f3f85"
+                  : "1px solid #f0e6ee",
               }}
             >
-              <h3 style={{ marginTop: 0, color: "#8f3f85" }}>{plano.nome}</h3>
-              <p>{plano.descricao}</p>
-
-              {plano.nome === "Gratuito" && (
+              {plano.destaque && (
                 <div
                   style={{
-                    background: "#fff8e8",
-                    color: "#8a6d1d",
-                    borderRadius: "14px",
-                    padding: "12px",
-                    fontSize: "13px",
-                    fontWeight: 700,
-                    margin: "12px 0",
+                    background: "#8f3f85",
+                    color: "#fff",
+                    padding: "8px 16px",
+                    borderRadius: "999px",
+                    display: "inline-block",
+                    fontSize: "12px",
+                    fontWeight: 800,
+                    marginBottom: "16px",
                   }}
                 >
-                  Após 30 dias, o acesso será bloqueado até a contratação de um
-                  plano pago.
+                  ⭐ MAIS ESCOLHIDO
                 </div>
               )}
+
+              <h3
+                style={{
+                  marginTop: 0,
+                  marginBottom: "8px",
+                  color: "#8f3f85",
+                  fontSize: "24px",
+                  fontWeight: 800,
+                }}
+              >
+                {plano.nome}
+              </h3>
+
+              <p
+                style={{
+                  marginTop: 0,
+                  color: "#777",
+                  fontWeight: 700,
+                  marginBottom: "16px",
+                }}
+              >
+                {plano.periodo}
+              </p>
+
+              <p
+                style={{
+                  color: "#555",
+                  lineHeight: 1.6,
+                  minHeight: "72px",
+                }}
+              >
+                {plano.descricao}
+              </p>
 
               <strong
                 style={{
                   display: "block",
-                  margin: "14px 0 18px",
-                  fontSize: "22px",
+                  margin: "18px 0 4px",
+                  fontSize: "36px",
                   color: "#8f3f85",
+                  fontWeight: 900,
                 }}
               >
                 {plano.preco}
               </strong>
 
+              <p
+                style={{
+                  fontSize: "13px",
+                  color: "#666",
+                  marginTop: 0,
+                  marginBottom: "18px",
+                }}
+              >
+                {plano.equivalente}
+              </p>
+
+              <div
+                style={{
+                  background: "#faf5f9",
+                  borderRadius: "16px",
+                  padding: "16px",
+                  marginBottom: "20px",
+                  color: "#555",
+                  fontSize: "14px",
+                  lineHeight: 1.8,
+                }}
+              >
+                ✔ Até 2 fichas funcionais
+                <br />
+                ✔ QR Code individual para cada ficha
+                <br />
+                ✔ Atualizações ilimitadas
+                <br />
+                ✔ Compartilhamento seguro
+                <br />
+                ✔ Acesso completo à plataforma
+              </div>
+
               <button
                 onClick={() => handleEscolherPlano(plano)}
+                disabled={carregandoPlano === plano.id}
                 style={{
                   width: "100%",
                   border: "none",
-                  borderRadius: "14px",
-                  padding: "14px",
+                  borderRadius: "16px",
+                  padding: "15px",
                   background: "#8f3f85",
                   color: "#fff",
-                  fontWeight: 800,
-                  cursor: "pointer",
+                  fontWeight: 900,
+                  cursor: carregandoPlano === plano.id ? "not-allowed" : "pointer",
                   boxShadow: "0 6px 0 #6f2f67",
+                  fontSize: "15px",
+                  opacity: carregandoPlano === plano.id ? 0.75 : 1,
                 }}
               >
-                Escolher plano
+                {carregandoPlano === plano.id
+                  ? "Gerando pagamento..."
+                  : "Escolher plano"}
               </button>
             </div>
           ))}

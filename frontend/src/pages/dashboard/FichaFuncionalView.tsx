@@ -346,7 +346,7 @@ export default function FichaFuncionalView() {
 
   function toggleArrayValue(
     value: string,
-    arr: string[],
+    _arr: string[],
     setter: React.Dispatch<React.SetStateAction<string[]>>
   ) {
     setter((prev) =>

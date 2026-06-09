@@ -1,39 +1,69 @@
-import { useState } from "react"
-import { supabase } from "../lib/supabase" // seu arquivo de conexão
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { supabase } from "../lib/supabase";
+import "./ForgotPassword.css";
 
 export default function ForgotPassword() {
-  const [email, setEmail] = useState("")
-  const [message, setMessage] = useState("")
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  async function handleReset(e) {
-    e.preventDefault()
+  async function handleReset(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setMessage("");
+    setErrorMsg("");
+    setLoading(true);
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email)
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/update-password`,
+    });
+
+    setLoading(false);
 
     if (error) {
-      setMessage("Erro ao enviar email.")
-    } else {
-      setMessage("📩 Email enviado! Verifique sua caixa.")
+      setErrorMsg("Não foi possível enviar o link. Confira o e-mail e tente novamente.");
+      return;
     }
+
+    setMessage("Link enviado com sucesso! Verifique sua caixa de entrada e o spam.");
   }
 
   return (
-    <div>
-      <h2>Recuperar senha</h2>
+    <main className="forgot-page">
+      <section className="forgot-card">
+        <div className="forgot-logo">tati</div>
 
-      <form onSubmit={handleReset}>
-        <input
-          type="email"
-          placeholder="Seu email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+        <h1>Recuperar senha</h1>
 
-        <button type="submit">Enviar</button>
-      </form>
+        <p className="forgot-subtitle">
+          Informe seu e-mail cadastrado para receber o link de redefinição de senha.
+        </p>
 
-      <p>{message}</p>
-    </div>
-  )
+        <form onSubmit={handleReset} className="forgot-form">
+          <label htmlFor="email">E-mail cadastrado</label>
+
+          <input
+            id="email"
+            type="email"
+            placeholder="Digite seu e-mail"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+
+          <button type="submit" disabled={loading}>
+            {loading ? "Enviando..." : "Enviar link de recuperação"}
+          </button>
+        </form>
+
+        {message && <div className="forgot-alert success">{message}</div>}
+        {errorMsg && <div className="forgot-alert error">{errorMsg}</div>}
+
+        <Link to="/" className="forgot-back">
+          Voltar para o login
+        </Link>
+      </section>
+    </main>
+  );
 }

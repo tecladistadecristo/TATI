@@ -21,6 +21,7 @@ function App() {
         <Route path="/" element={<LoginPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/cadastro" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* SUA ROTA ORIGINAL */}
         <Route path="/perfil-publico" element={<PerfilPublicoPage />} />
