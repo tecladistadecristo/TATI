@@ -38,7 +38,11 @@ function getPerfilPublicoUrl(id: string) {
   return `${window.location.origin}/publico/${id}`;
 }
 
-export default function CarteirinhaView() {
+type Props = {
+  fichaId?: string;
+};
+
+export default function CarteirinhaView({ fichaId }: Props) {
   const [loading, setLoading] = useState(true);
   const [ficha, setFicha] = useState<FichaRow | null>(null);
 
@@ -51,6 +55,25 @@ export default function CarteirinhaView() {
     async function carregar() {
       setLoading(true);
 
+      const fichaSelecionadaId =
+        fichaId || localStorage.getItem("ficha_funcional_selecionada_id") || "";
+
+      if (fichaSelecionadaId) {
+        const { data: fichaBanco, error } = await supabase
+          .from("care_forms")
+          .select(
+            "id, profile_id, nome_crianca, data_nascimento_crianca, apelido_crianca, responsavel_contato, telefone_responsavel, contato_emergencia, responsavel_nome, nome_responsavel"
+          )
+          .eq("id", fichaSelecionadaId)
+          .maybeSingle();
+
+        if (!error && fichaBanco) {
+          setFicha(fichaBanco as FichaRow);
+          setLoading(false);
+          return;
+        }
+      }
+
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -62,110 +85,61 @@ export default function CarteirinhaView() {
           .eq("user_id", user.id)
           .maybeSingle();
 
-        if (profileRow?.id) {
-          const { data: fichaRow } = await supabase
-            .from("care_forms")
-            .select(
-              "id, profile_id, nome_crianca, data_nascimento_crianca, apelido_crianca, responsavel_contato, telefone_responsavel, contato_emergencia, responsavel_nome, nome_responsavel"
-            )
-            .eq("profile_id", profileRow.id)
-            .maybeSingle();
+        let query = supabase
+          .from("care_forms")
+          .select(
+            "id, profile_id, nome_crianca, data_nascimento_crianca, apelido_crianca, responsavel_contato, telefone_responsavel, contato_emergencia, responsavel_nome, nome_responsavel, atualizado_em"
+          )
+          .order("atualizado_em", { ascending: false })
+          .limit(1);
 
-          if (fichaRow) {
-            setFicha(fichaRow as FichaRow);
-            setLoading(false);
-            return;
-          }
+        if (profileRow?.id) {
+          query = query.or(`profile_id.eq.${profileRow.id},profile_id.eq.${user.id}`);
+        } else {
+          query = query.eq("profile_id", user.id);
+        }
+
+        const { data: fichaRows } = await query;
+        const fichaRow = Array.isArray(fichaRows) ? fichaRows[0] : null;
+
+        if (fichaRow) {
+          setFicha(fichaRow as FichaRow);
+          setLoading(false);
+          return;
         }
       }
 
       const fichaSalva = localStorage.getItem("ficha_funcional");
 
       if (fichaSalva) {
-        const localFicha = JSON.parse(fichaSalva);
+        try {
+          const localFicha = JSON.parse(fichaSalva);
 
-        if (localFicha.id) {
-          const { data: fichaBanco } = await supabase
-            .from("care_forms")
-            .select(
-              "id, profile_id, nome_crianca, data_nascimento_crianca, apelido_crianca, responsavel_contato, telefone_responsavel, contato_emergencia, responsavel_nome, nome_responsavel"
-            )
-            .or(`id.eq.${localFicha.id},profile_id.eq.${localFicha.id}`)
-            .maybeSingle();
-
-          if (fichaBanco) {
-            setFicha(fichaBanco as FichaRow);
-            setLoading(false);
-            return;
-          }
+          setFicha({
+            id: localFicha.id || "local-ficha",
+            nome_crianca: localFicha.nome_crianca,
+            data_nascimento_crianca: localFicha.data_nascimento_crianca,
+            apelido_crianca: localFicha.apelido_crianca,
+            responsavel_contato:
+              localFicha.responsavel_contato ||
+              localFicha.telefone_responsavel ||
+              localFicha.contato_emergencia,
+            telefone_responsavel: localFicha.telefone_responsavel,
+            contato_emergencia: localFicha.contato_emergencia,
+            responsavel_nome:
+              localFicha.responsavel_nome || localFicha.nome_responsavel,
+            nome_responsavel: localFicha.nome_responsavel,
+          });
+        } catch (error) {
+          console.error("Erro ao carregar ficha local:", error);
         }
-
-        setFicha({
-          id: localFicha.id || "local-ficha",
-          nome_crianca: localFicha.nome_crianca,
-          data_nascimento_crianca: localFicha.data_nascimento_crianca,
-          apelido_crianca: localFicha.apelido_crianca,
-          responsavel_contato:
-            localFicha.responsavel_contato ||
-            localFicha.telefone_responsavel ||
-            localFicha.contato_emergencia,
-          telefone_responsavel: localFicha.telefone_responsavel,
-          contato_emergencia: localFicha.contato_emergencia,
-          responsavel_nome:
-            localFicha.responsavel_nome || localFicha.nome_responsavel,
-          nome_responsavel: localFicha.nome_responsavel,
-        });
-
-        setLoading(false);
-        return;
       }
 
-      const cadastroInicial = localStorage.getItem("cadastro_inicial");
-
-      if (!cadastroInicial) {
-        setLoading(false);
-        return;
-      }
-
-      const cadastro = JSON.parse(cadastroInicial);
-      const email = cadastro.email;
-
-      const { data: userRow } = await supabase
-        .from("users")
-        .select("id,email")
-        .eq("email", email)
-        .maybeSingle();
-
-      if (!userRow) {
-        setLoading(false);
-        return;
-      }
-
-      const { data: profileRow } = await supabase
-        .from("profiles")
-        .select("id")
-        .or(`user_id.eq.${userRow.id},id.eq.${userRow.id}`)
-        .maybeSingle();
-
-      if (!profileRow) {
-        setLoading(false);
-        return;
-      }
-
-      const { data: fichaRow } = await supabase
-        .from("care_forms")
-        .select(
-          "id, profile_id, nome_crianca, data_nascimento_crianca, apelido_crianca, responsavel_contato, telefone_responsavel, contato_emergencia, responsavel_nome, nome_responsavel"
-        )
-        .eq("profile_id", profileRow.id)
-        .maybeSingle();
-
-      setFicha((fichaRow as FichaRow) || null);
       setLoading(false);
     }
 
     carregar();
-  }, []);
+  }, [fichaId]);
 
   const publicUrl = useMemo(() => {
     if (!ficha?.id || ficha.id === "local-ficha") return "";

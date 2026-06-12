@@ -24,17 +24,28 @@ async function criarPreferenciaPagamento(params: CriarPreferenciaParams) {
         currency_id: "BRL",
       },
     ],
+
+    payment_methods: {
+      excluded_payment_types: [],
+      installments: 12,
+    },
+
     external_reference: params.userId,
+
     metadata: {
       user_id: params.userId,
       plano: params.plano,
     },
+
     back_urls: {
       success: `${baseUrl}/pagamento/sucesso`,
       failure: `${baseUrl}/pagamento/erro`,
       pending: `${baseUrl}/pagamento/pendente`,
     },
+
     auto_return: "approved",
+
+    statement_descriptor: "TATI",
   };
 
   const response = await fetch(

@@ -148,7 +148,11 @@ function ToggleChips({
   );
 }
 
-export default function FichaFuncionalView() {
+type FichaFuncionalViewProps = {
+  fichaId?: string;
+};
+
+export default function FichaFuncionalView({ fichaId }: FichaFuncionalViewProps) {
   const navigate = useNavigate();
 
   const [form, setForm] = useState<FormData>(initialForm);
@@ -181,51 +185,78 @@ export default function FichaFuncionalView() {
   }, [form]);
 
   useEffect(() => {
+    function aplicarFicha(ficha: Record<string, unknown>) {
+      const tipoPcdOpcoes = ficha.tipo_pcd_opcoes
+        ? String(ficha.tipo_pcd_opcoes)
+            .split(",")
+            .map((v) => v.trim())
+            .filter(Boolean)
+        : [];
+
+      const padraoSonoLista = ficha.padrao_sono
+        ? String(ficha.padrao_sono)
+            .split(",")
+            .map((v) => v.trim())
+            .filter(Boolean)
+        : [];
+
+      const comunicacaoTipoLista = ficha.comunicacao_tipo
+        ? String(ficha.comunicacao_tipo)
+            .split(",")
+            .map((v) => v.trim())
+            .filter(Boolean)
+        : [];
+
+      const orientacaoComunicacaoLista = ficha.orientacao_comunicacao
+        ? String(ficha.orientacao_comunicacao)
+            .split(",")
+            .map((v) => v.trim())
+            .filter(Boolean)
+        : [];
+
+      const sensibilidadesLista = ficha.sensibilidades_sensoriais
+        ? String(ficha.sensibilidades_sensoriais)
+            .split(",")
+            .map((v) => v.trim())
+            .filter(Boolean)
+        : [];
+
+      const situacoesAgitacaoLista = ficha.situacoes_agitacao
+        ? String(ficha.situacoes_agitacao)
+            .split(",")
+            .map((v) => v.trim())
+            .filter(Boolean)
+        : [];
+
+      setForm((prev) => ({
+        ...prev,
+        ...(ficha as Partial<FormData>),
+        autoriza_uso_funcional: !!ficha.autoriza_uso_funcional,
+        termo_ciencia: !!ficha.termo_ciencia,
+      }));
+
+      setPcdTipos(tipoPcdOpcoes);
+      setPadraoSono(padraoSonoLista);
+      setComunicacaoTipo(comunicacaoTipoLista);
+      setOrientacaoComunicacao(orientacaoComunicacaoLista);
+      setSensibilidades(sensibilidadesLista);
+      setSituacoesAgitacao(situacoesAgitacaoLista);
+    }
+
     async function carregarFicha() {
-      const fichaSalva =
-        localStorage.getItem("ficha_funcional") ||
-        localStorage.getItem("ficha_funcional_rascunho");
+      const fichaSelecionadaId =
+        fichaId || localStorage.getItem("ficha_funcional_selecionada_id") || "";
 
-      if (fichaSalva) {
-        try {
-          const parsed = JSON.parse(fichaSalva);
+      if (fichaSelecionadaId) {
+        const { data: fichaDb, error } = await supabase
+          .from("care_forms")
+          .select("*")
+          .eq("id", fichaSelecionadaId)
+          .maybeSingle();
 
-          setForm((prev) => ({
-            ...prev,
-            ...parsed,
-            autoriza_uso_funcional: !!parsed.autoriza_uso_funcional,
-            termo_ciencia: !!parsed.termo_ciencia,
-          }));
-
-          setPcdTipos(
-            Array.isArray(parsed.tipo_pcd_opcoes) ? parsed.tipo_pcd_opcoes : []
-          );
-          setPadraoSono(
-            Array.isArray(parsed.padrao_sono) ? parsed.padrao_sono : []
-          );
-          setComunicacaoTipo(
-            Array.isArray(parsed.comunicacao_tipo)
-              ? parsed.comunicacao_tipo
-              : []
-          );
-          setOrientacaoComunicacao(
-            Array.isArray(parsed.orientacao_comunicacao)
-              ? parsed.orientacao_comunicacao
-              : []
-          );
-          setSensibilidades(
-            Array.isArray(parsed.sensibilidades_sensoriais)
-              ? parsed.sensibilidades_sensoriais
-              : []
-          );
-          setSituacoesAgitacao(
-            Array.isArray(parsed.situacoes_agitacao)
-              ? parsed.situacoes_agitacao
-              : []
-          );
+        if (!error && fichaDb) {
+          aplicarFicha(fichaDb as Record<string, unknown>);
           return;
-        } catch (error) {
-          console.error("Erro ao carregar ficha local:", error);
         }
       }
 
@@ -234,89 +265,47 @@ export default function FichaFuncionalView() {
       } = await supabase.auth.getSession();
 
       const authUserId = session?.user?.id;
-      if (!authUserId) return;
 
-      const { data: userRow } = await supabase
-        .from("users")
-        .select("id,email")
-        .eq("auth_user_id", authUserId)
-        .maybeSingle();
+      if (authUserId) {
+        const { data: profileRow } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("user_id", authUserId)
+          .maybeSingle();
 
-      if (!userRow) return;
+        if (profileRow?.id) {
+          const { data: fichasDb } = await supabase
+            .from("care_forms")
+            .select("*")
+            .eq("profile_id", profileRow.id)
+            .order("atualizado_em", { ascending: false })
+            .limit(1);
 
-      const { data: profileRow } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("user_id", userRow.id)
-        .maybeSingle();
+          const fichaDb = Array.isArray(fichasDb) ? fichasDb[0] : null;
 
-      if (!profileRow) return;
+          if (fichaDb) {
+            aplicarFicha(fichaDb as Record<string, unknown>);
+            return;
+          }
+        }
+      }
 
-      const { data: fichaDb } = await supabase
-        .from("care_forms")
-        .select("*")
-        .eq("profile_id", profileRow.id)
-        .maybeSingle();
+      const fichaSalva =
+        localStorage.getItem("ficha_funcional") ||
+        localStorage.getItem("ficha_funcional_rascunho");
 
-      if (!fichaDb) return;
+      if (!fichaSalva) return;
 
-      const parsed = {
-        ...fichaDb,
-        tipo_pcd_opcoes: fichaDb.tipo_pcd_opcoes
-          ? String(fichaDb.tipo_pcd_opcoes)
-              .split(",")
-              .map((v) => v.trim())
-              .filter(Boolean)
-          : [],
-        padrao_sono: fichaDb.padrao_sono
-          ? String(fichaDb.padrao_sono)
-              .split(",")
-              .map((v) => v.trim())
-              .filter(Boolean)
-          : [],
-        comunicacao_tipo: fichaDb.comunicacao_tipo
-          ? String(fichaDb.comunicacao_tipo)
-              .split(",")
-              .map((v) => v.trim())
-              .filter(Boolean)
-          : [],
-        orientacao_comunicacao: fichaDb.orientacao_comunicacao
-          ? String(fichaDb.orientacao_comunicacao)
-              .split(",")
-              .map((v) => v.trim())
-              .filter(Boolean)
-          : [],
-        sensibilidades_sensoriais: fichaDb.sensibilidades_sensoriais
-          ? String(fichaDb.sensibilidades_sensoriais)
-              .split(",")
-              .map((v) => v.trim())
-              .filter(Boolean)
-          : [],
-        situacoes_agitacao: fichaDb.situacoes_agitacao
-          ? String(fichaDb.situacoes_agitacao)
-              .split(",")
-              .map((v) => v.trim())
-              .filter(Boolean)
-          : [],
-      };
-
-      setForm((prev) => ({
-        ...prev,
-        ...parsed,
-        autoriza_uso_funcional: !!parsed.autoriza_uso_funcional,
-        termo_ciencia: !!parsed.termo_ciencia,
-      }));
-
-      setPcdTipos(parsed.tipo_pcd_opcoes || []);
-      setPadraoSono(parsed.padrao_sono || []);
-      setComunicacaoTipo(parsed.comunicacao_tipo || []);
-      setOrientacaoComunicacao(parsed.orientacao_comunicacao || []);
-      setSensibilidades(parsed.sensibilidades_sensoriais || []);
-      setSituacoesAgitacao(parsed.situacoes_agitacao || []);
+      try {
+        const parsed = JSON.parse(fichaSalva) as Record<string, unknown>;
+        aplicarFicha(parsed);
+      } catch (error) {
+        console.error("Erro ao carregar ficha local:", error);
+      }
     }
 
-    carregarFicha();
-  }, []);
+    void carregarFicha();
+  }, [fichaId]);
 
   useEffect(() => {
     const payload = {
@@ -441,7 +430,7 @@ export default function FichaFuncionalView() {
       let { data: profileRow, error: profileError } = await supabase
         .from("profiles")
         .select("id")
-        .eq("user_id", userRow.id)
+        .eq("user_id", authUserId)
         .maybeSingle();
 
       if (profileError) {
@@ -547,11 +536,21 @@ export default function FichaFuncionalView() {
         ativo: true,
       };
 
-      const { data: existingCareForm } = await supabase
-        .from("care_forms")
-        .select("id")
-        .eq("profile_id", profileRow.id)
-        .maybeSingle();
+      const fichaSelecionadaId =
+        fichaId || localStorage.getItem("ficha_funcional_selecionada_id") || "";
+
+      const { data: existingCareForm } = fichaSelecionadaId
+        ? await supabase
+            .from("care_forms")
+            .select("id")
+            .eq("id", fichaSelecionadaId)
+            .maybeSingle()
+        : await supabase
+            .from("care_forms")
+            .select("id")
+            .eq("profile_id", profileRow.id)
+            .eq("nome_crianca", form.nome_crianca)
+            .maybeSingle();
 
       let careFormId = existingCareForm?.id || null;
 
@@ -583,6 +582,10 @@ export default function FichaFuncionalView() {
         }
 
         careFormId = insertedCareForm.id;
+      }
+
+      if (careFormId) {
+        localStorage.setItem("ficha_funcional_selecionada_id", careFormId);
       }
 
       const planoEscolhido = localStorage.getItem("plano_escolhido");

@@ -38,36 +38,30 @@ type PlanoEscolhido = {
   bloqueado?: boolean;
 };
 
-type PlanoRow = {
+type UserRow = {
   id: string;
-  nome: string;
-  tipo: "individual" | "igreja" | "escola";
-  preco: number | string | null;
-  duracao_dias: number | null;
-  permite_qrcode?: boolean | null;
-  permite_pdf?: boolean | null;
-  permite_diario?: boolean | null;
-  permite_perfil_publico?: boolean | null;
-  ativo?: boolean | null;
+  auth_user_id: string | null;
+  email: string | null;
+  onboarding_status: string | null;
+  plano: string | null;
+  status_pagamento: string | null;
+  data_expiracao: string | null;
 };
 
-type SubscriptionRow = {
+type CareFormRow = {
   id: string;
-  status: string;
-  data_inicio: string | null;
-  data_fim: string | null;
-  cortesia_dias?: number | null;
-  plan_id: string;
-  plans: PlanoRow | PlanoRow[] | null;
+  nome_crianca: string | null;
+  responsavel_nome: string | null;
+  nome_responsavel: string | null;
+  atualizado_em: string | null;
+};
+
+type ProfileRow = {
+  id: string;
 };
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
-}
-
-function firstPlan(plans: PlanoRow | PlanoRow[] | null | undefined): PlanoRow | null {
-  if (!plans) return null;
-  return Array.isArray(plans) ? plans[0] ?? null : plans;
 }
 
 function montarPlanoGratuito(): PlanoEscolhido {
@@ -79,45 +73,88 @@ function montarPlanoGratuito(): PlanoEscolhido {
     tipo: "individual",
     duracao_dias: 0,
     funcoes_limitadas: true,
-    status: "ativa",
+    status: "gratuito",
     onboarding_status: "painel_individual",
     bloqueado: false,
   };
 }
 
-function montarPlanoDoBanco(subscription: SubscriptionRow): PlanoEscolhido {
-  const plan = firstPlan(subscription.plans);
+function normalizarStatus(status?: string | null) {
+  return String(status || "").trim().toLowerCase();
+}
 
-  if (!plan) {
-    return montarPlanoGratuito();
-  }
+function normalizarPlano(plano?: string | null) {
+  return String(plano || "gratuito").trim().toLowerCase();
+}
 
-  const nomePlano = plan.nome ?? "Gratuito";
-  const precoFormatado =
-    plan.preco === null || plan.preco === undefined ? "0,00" : String(plan.preco);
+function nomeDaFicha(ficha: CareFormRow) {
+  return (
+    ficha.nome_crianca ||
+    ficha.responsavel_nome ||
+    ficha.nome_responsavel ||
+    "Perfil sem nome"
+  );
+}
 
-  const funcoesLimitadas =
-    nomePlano.toLowerCase() === "gratuito" ||
-    !plan.permite_qrcode ||
-    !plan.permite_pdf ||
-    !plan.permite_diario ||
-    !plan.permite_perfil_publico;
+function montarPlanoPeloUsuario(userRow: UserRow): PlanoEscolhido {
+  const planoBanco = normalizarPlano(userRow.plano);
+  const statusBanco = normalizarStatus(userRow.status_pagamento);
+
+  const nomePlano =
+    planoBanco === "semestral"
+      ? "Semestral"
+      : planoBanco === "anual"
+      ? "Anual"
+      : planoBanco === "trimestral"
+      ? "Trimestral"
+      : planoBanco === "gratuito"
+      ? "Gratuito"
+      : userRow.plano || "Gratuito";
 
   return {
-    id: plan.id,
     nome: nomePlano,
     descricao: `Plano ${nomePlano}`,
-    preco: precoFormatado,
+    preco: "",
     destino: "",
-    tipo: plan.tipo ?? "individual",
-    duracao_dias: plan.duracao_dias ?? 0,
-    funcoes_limitadas: funcoesLimitadas,
-    data_inicio: subscription.data_inicio ?? undefined,
-    data_fim: subscription.data_fim ?? undefined,
-    status: subscription.status,
-    onboarding_status: "painel_individual",
+    tipo: "individual",
+    duracao_dias:
+      planoBanco === "semestral"
+        ? 180
+        : planoBanco === "anual"
+        ? 365
+        : planoBanco === "trimestral"
+        ? 90
+        : 0,
+    funcoes_limitadas:
+      planoBanco === "gratuito" || statusBanco === "gratuito",
+    data_fim: userRow.data_expiracao ?? undefined,
+    status: statusBanco,
+    onboarding_status: userRow.onboarding_status ?? "painel_individual",
     bloqueado: false,
   };
+}
+
+function usuarioTemPlanoAtivo(userRow: UserRow) {
+  const status = normalizarStatus(userRow.status_pagamento);
+
+  const statusLiberados = [
+    "gratuito",
+    "aprovado",
+    "approved",
+    "paid",
+    "pago",
+    "ativa",
+    "ativo",
+    "active",
+  ];
+
+  if (!statusLiberados.includes(status)) return false;
+
+  if (status === "gratuito") return true;
+
+  if (!userRow.data_expiracao) return true;
+
+  return new Date(userRow.data_expiracao) > new Date();
 }
 
 export default function DashboardPage() {
@@ -130,61 +167,94 @@ export default function DashboardPage() {
   const [bloqueado, setBloqueado] = useState(false);
   const [perfilNome, setPerfilNome] = useState("Perfil Teste");
   const [loadingPlano, setLoadingPlano] = useState(true);
-  const [fichaId, setFichaId] = useState<string>("");
+  const [loadingFichas, setLoadingFichas] = useState(true);
+  const [fichaId, setFichaId] = useState("");
+  const [fichas, setFichas] = useState<CareFormRow[]>([]);
+  const [fichaSelecionada, setFichaSelecionada] =
+    useState<CareFormRow | null>(null);
 
   useEffect(() => {
-    async function carregarFichaRealDoSupabase() {
-      const fichaSalva = localStorage.getItem("ficha_funcional");
+    async function carregarFichasDoSupabase() {
+      setLoadingFichas(true);
 
-      if (fichaSalva) {
-        try {
-          const parsed = JSON.parse(fichaSalva);
+      try {
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser();
 
-          if (parsed?.nome_crianca) {
-            setPerfilNome(parsed.nome_crianca);
-          }
-
-          if (parsed?.id) {
-            setFichaId(parsed.id);
-          }
-        } catch (error) {
-          console.error("Erro ao ler ficha salva:", error);
+        if (authError) {
+          console.error("Erro ao obter usuário autenticado:", authError);
+          return;
         }
-      }
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        if (!user?.id) return;
 
-      if (!user) return;
+        const { data: profileRow, error: profileError } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("user_id", user.id)
+          .maybeSingle();
 
-      const { data, error } = await supabase
-        .from("care_forms")
-        .select("id, nome_crianca, responsavel_nome, nome_responsavel")
-        .eq("profile_id", user.id)
-        .order("atualizado_em", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        if (profileError) {
+          console.error("Erro ao buscar profile:", profileError);
+          return;
+        }
 
-      if (error) {
-        console.error("Erro ao buscar ficha real:", error);
-        return;
-      }
+        const profile = profileRow as ProfileRow | null;
 
-      if (data?.id) {
-        setFichaId(data.id);
-      }
+        if (!profile?.id) {
+          console.error("Profile não encontrado para o usuário:", user.id);
+          return;
+        }
 
-      if (data?.nome_crianca) {
-        setPerfilNome(data.nome_crianca);
-      } else if (data?.responsavel_nome) {
-        setPerfilNome(data.responsavel_nome);
-      } else if (data?.nome_responsavel) {
-        setPerfilNome(data.nome_responsavel);
+        const { data, error } = await supabase
+          .from("care_forms")
+          .select(
+            "id, nome_crianca, responsavel_nome, nome_responsavel, atualizado_em"
+          )
+          .eq("profile_id", profile.id)
+          .order("atualizado_em", { ascending: false });
+
+        if (error) {
+          console.error("Erro ao buscar fichas funcionais:", error);
+          return;
+        }
+
+        const lista: CareFormRow[] = (data ?? []).map((item) => ({
+          id: String(item.id),
+          nome_crianca: item.nome_crianca ?? null,
+          responsavel_nome: item.responsavel_nome ?? null,
+          nome_responsavel: item.nome_responsavel ?? null,
+          atualizado_em: item.atualizado_em ?? null,
+        }));
+
+        setFichas(lista);
+
+        if (lista.length === 0) {
+          setFichaSelecionada(null);
+          setFichaId("");
+          setPerfilNome("Perfil Teste");
+          return;
+        }
+
+        const fichaSalvaId =
+          localStorage.getItem("ficha_funcional_selecionada_id") || "";
+
+        const fichaInicial =
+          lista.find((item) => item.id === fichaSalvaId) || lista[0];
+
+        setFichaSelecionada(fichaInicial);
+        setFichaId(fichaInicial.id);
+        setPerfilNome(nomeDaFicha(fichaInicial));
+
+        localStorage.setItem("ficha_funcional_selecionada_id", fichaInicial.id);
+      } finally {
+        setLoadingFichas(false);
       }
     }
 
-    void carregarFichaRealDoSupabase();
+    void carregarFichasDoSupabase();
   }, []);
 
   useEffect(() => {
@@ -205,19 +275,28 @@ export default function DashboardPage() {
         }
 
         if (!authUser) {
-          setPlano(montarPlanoGratuito());
-          setBloqueado(false);
+          navigate("/login", { replace: true });
           return;
         }
 
         const { data: userRow, error: userError } = await supabase
           .from("users")
-          .select("id, auth_user_id, email, onboarding_status")
+          .select(
+            `
+            id,
+            auth_user_id,
+            email,
+            onboarding_status,
+            plano,
+            status_pagamento,
+            data_expiracao
+          `
+          )
           .eq("auth_user_id", authUser.id)
           .maybeSingle();
 
         if (userError) {
-          console.error("Erro ao buscar usuário na tabela users:", userError);
+          console.error("Erro ao buscar usuário:", userError);
           setPlano(montarPlanoGratuito());
           setBloqueado(false);
           return;
@@ -229,74 +308,28 @@ export default function DashboardPage() {
           return;
         }
 
-        const { data: subscriptionRows, error: subError } = await supabase
-          .from("subscriptions")
-          .select(`
-            id,
-            status,
-            data_inicio,
-            data_fim,
-            cortesia_dias,
-            plan_id,
-            plans (
-              id,
-              nome,
-              tipo,
-              preco,
-              duracao_dias,
-              permite_qrcode,
-              permite_pdf,
-              permite_diario,
-              permite_perfil_publico,
-              ativo
-            )
-          `)
-          .eq("user_id", userRow.id)
-          .order("atualizado_em", { ascending: false });
+        const usuarioBanco = userRow as UserRow;
+        const planoMontado = montarPlanoPeloUsuario(usuarioBanco);
+        const planoAtivo = usuarioTemPlanoAtivo(usuarioBanco);
 
-        if (subError) {
-          console.error("Erro ao buscar assinatura:", subError);
-          setPlano(montarPlanoGratuito());
-          setBloqueado(false);
-          return;
-        }
-
-        const assinaturaAtiva = (subscriptionRows ?? []).find(
-          (item: SubscriptionRow) => item.status === "ativa"
-        );
-
-        if (!assinaturaAtiva) {
-          setPlano(montarPlanoGratuito());
-          setBloqueado(false);
-          return;
-        }
-
-        const planoMontado = montarPlanoDoBanco(assinaturaAtiva);
-
-        let estaBloqueado = false;
-
-        if (planoMontado.data_fim) {
-          const agora = new Date();
-          const vencimento = new Date(planoMontado.data_fim);
-          estaBloqueado = agora > vencimento;
-        }
-
-        if (estaBloqueado) {
+        if (!planoAtivo) {
           setBloqueado(true);
           setPlano({
             ...planoMontado,
-            status: "vencida",
+            status: usuarioBanco.status_pagamento ?? "pendente",
             onboarding_status: "bloqueado",
             bloqueado: true,
           });
-        } else {
-          setBloqueado(false);
-          setPlano({
-            ...planoMontado,
-            onboarding_status: userRow.onboarding_status ?? "painel_individual",
-            bloqueado: false,
-          });
+          return;
         }
+
+        setBloqueado(false);
+        setPlano({
+          ...planoMontado,
+          onboarding_status:
+            usuarioBanco.onboarding_status ?? "painel_individual",
+          bloqueado: false,
+        });
       } catch (error) {
         console.error("Erro inesperado ao carregar plano:", error);
         setPlano(montarPlanoGratuito());
@@ -306,8 +339,8 @@ export default function DashboardPage() {
       }
     }
 
-    carregarPlanoDoSupabase();
-  }, []);
+    void carregarPlanoDoSupabase();
+  }, [navigate]);
 
   useEffect(() => {
     if (etapa === "ficha-funcional") {
@@ -324,6 +357,18 @@ export default function DashboardPage() {
     return plano?.nome === "Gratuito" || plano?.funcoes_limitadas;
   }, [plano]);
 
+  function handleSelecionarFicha(id: string) {
+    const selecionada = fichas.find((item) => item.id === id);
+
+    if (!selecionada) return;
+
+    setFichaSelecionada(selecionada);
+    setFichaId(selecionada.id);
+    setPerfilNome(nomeDaFicha(selecionada));
+
+    localStorage.setItem("ficha_funcional_selecionada_id", selecionada.id);
+  }
+
   function handleAbrirPerfilPublico() {
     if (!fichaId) {
       setActiveView("publico");
@@ -336,10 +381,11 @@ export default function DashboardPage() {
   function renderBloqueio() {
     return (
       <div className="blocked-box">
-        <h3>Seu acesso foi bloqueado</h3>
+        <h3>Seu acesso está pendente ou expirado</h3>
         <p>
-          O período do seu plano expirou. Para continuar usando o sistema,
-          escolha um plano pago.
+          O pagamento ainda não foi aprovado ou o período do plano terminou.
+          Assim que o status for aprovado no banco de dados, o acesso será
+          liberado automaticamente.
         </p>
 
         <button
@@ -353,22 +399,20 @@ export default function DashboardPage() {
   }
 
   function renderContent() {
-    if (loadingPlano) {
+    if (loadingPlano || loadingFichas) {
       return (
         <>
           <h3>Carregando...</h3>
-          <p>Estamos consultando o plano do usuário.</p>
+          <p>Estamos consultando os dados do usuário.</p>
         </>
       );
     }
 
-    if (bloqueado) {
-      return renderBloqueio();
-    }
+    if (bloqueado) return renderBloqueio();
 
     switch (activeView) {
       case "carteirinha":
-        return <CarteirinhaView />;
+        return <CarteirinhaView fichaId={fichaId} />;
 
       case "qrcode":
         return fichaId ? (
@@ -381,15 +425,14 @@ export default function DashboardPage() {
         );
 
       case "ficha":
-        return <FichaFuncionalView />;
+        return <FichaFuncionalView fichaId={fichaId} />;
 
       case "publico":
         return (
           <>
             <h3>Perfil Público</h3>
             <p>
-              O perfil público é aberto diretamente ao clicar no botão ao lado
-              e pode ser acessado externamente por profissionais autorizados.
+              O perfil público é aberto diretamente ao clicar no botão ao lado.
             </p>
           </>
         );
@@ -412,27 +455,58 @@ export default function DashboardPage() {
     <div className="dashboard-sidebar">
       <section className="selected-profile-card">
         <p className="section-label">Perfil selecionado</p>
+
         <h2>{perfilNome}</h2>
-        <p>
-          Aqui aparecerão os dados resumidos do perfil escolhido no sistema.
-        </p>
+
+        {fichas.length > 1 && (
+          <select
+            className="profile-select"
+            value={fichaSelecionada?.id || fichaId}
+            onChange={(event) => handleSelecionarFicha(event.target.value)}
+          >
+            {fichas.map((ficha) => (
+              <option key={ficha.id} value={ficha.id}>
+                {nomeDaFicha(ficha)}
+              </option>
+            ))}
+          </select>
+        )}
+
+        {fichas.length === 0 && !loadingFichas && (
+          <p>Nenhuma ficha funcional encontrada para este perfil.</p>
+        )}
+
+        {fichas.length > 0 && (
+          <p>
+            Selecione qual ficha deseja visualizar para gerar a carteirinha,
+            QR Code ou editar os dados.
+          </p>
+        )}
 
         {plano && (
           <div className="plan-badge">
             Plano: {plano.nome}
+            {plano.status ? ` • Status: ${plano.status}` : ""}
             {funcoesLimitadas && !bloqueado ? " • funções limitadas" : ""}
           </div>
         )}
 
-        <button className="primary-btn" type="button">
-          Trocar perfil
+        <button
+          className="primary-btn"
+          type="button"
+          onClick={() => setActiveView("ficha")}
+          disabled={bloqueado || loadingPlano}
+        >
+          {fichas.length > 0 ? "Editar ficha" : "Criar ficha"}
         </button>
       </section>
 
       <section className="panel-actions-grid">
         <button
           type="button"
-          className={`panel-action-card ${activeView === "carteirinha" ? "active-card" : ""}`}
+          className={`panel-action-card ${
+            activeView === "carteirinha" ? "active-card" : ""
+          }`}
           onClick={() => setActiveView("carteirinha")}
           disabled={bloqueado || loadingPlano}
         >
@@ -441,7 +515,9 @@ export default function DashboardPage() {
 
         <button
           type="button"
-          className={`panel-action-card ${activeView === "qrcode" ? "active-card" : ""}`}
+          className={`panel-action-card ${
+            activeView === "qrcode" ? "active-card" : ""
+          }`}
           onClick={() => setActiveView("qrcode")}
           disabled={bloqueado || funcoesLimitadas || loadingPlano}
         >
@@ -450,7 +526,9 @@ export default function DashboardPage() {
 
         <button
           type="button"
-          className={`panel-action-card ${activeView === "ficha" ? "active-card" : ""}`}
+          className={`panel-action-card ${
+            activeView === "ficha" ? "active-card" : ""
+          }`}
           onClick={() => setActiveView("ficha")}
           disabled={bloqueado || loadingPlano}
         >
@@ -459,7 +537,9 @@ export default function DashboardPage() {
 
         <button
           type="button"
-          className={`panel-action-card ${activeView === "publico" ? "active-card" : ""}`}
+          className={`panel-action-card ${
+            activeView === "publico" ? "active-card" : ""
+          }`}
           onClick={handleAbrirPerfilPublico}
           disabled={bloqueado || funcoesLimitadas || loadingPlano}
         >
@@ -468,7 +548,9 @@ export default function DashboardPage() {
 
         <button
           type="button"
-          className={`panel-action-card ${activeView === "diario" ? "active-card" : ""}`}
+          className={`panel-action-card ${
+            activeView === "diario" ? "active-card" : ""
+          }`}
           onClick={() => setActiveView("diario")}
           disabled={bloqueado || funcoesLimitadas || loadingPlano}
         >
@@ -477,7 +559,9 @@ export default function DashboardPage() {
 
         <button
           type="button"
-          className={`panel-action-card ${activeView === "agenda" ? "active-card" : ""}`}
+          className={`panel-action-card ${
+            activeView === "agenda" ? "active-card" : ""
+          }`}
           onClick={() => setActiveView("agenda")}
           disabled={bloqueado || funcoesLimitadas || loadingPlano}
         >
@@ -486,7 +570,9 @@ export default function DashboardPage() {
 
         <button
           type="button"
-          className={`panel-action-card ${activeView === "panico" ? "active-card" : ""}`}
+          className={`panel-action-card ${
+            activeView === "panico" ? "active-card" : ""
+          }`}
           onClick={() => setActiveView("panico")}
           disabled={bloqueado || loadingPlano}
         >
