@@ -1,0 +1,254 @@
+.care-timeline-page {
+  padding: 32px;
+  color: #24113a;
+}
+
+.timeline-header {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.timeline-badge {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #efe7ff;
+  color: #6633cc;
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.timeline-header h1 {
+  margin: 0;
+  font-size: 34px;
+  color: #4b238f;
+}
+
+.timeline-header p {
+  margin-top: 10px;
+  font-size: 16px;
+  color: #5f4b75;
+  line-height: 1.5;
+}
+
+.timeline-alert-card,
+.timeline-form-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(102, 51, 204, 0.14);
+  border-radius: 28px;
+  padding: 22px;
+  box-shadow: 0 18px 45px rgba(76, 35, 143, 0.12);
+}
+
+.timeline-alert-card strong {
+  color: #6633cc;
+  font-size: 16px;
+}
+
+.timeline-alert-card p {
+  margin-bottom: 0;
+}
+
+.timeline-form-card {
+  margin-bottom: 34px;
+}
+
+.timeline-form-card h2,
+.timeline-list h2 {
+  margin-top: 0;
+  color: #4b238f;
+}
+
+.timeline-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.timeline-form-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 700;
+  color: #4b238f;
+  margin-bottom: 16px;
+}
+
+.timeline-form-card input,
+.timeline-form-card select,
+.timeline-form-card textarea {
+  border: 1px solid rgba(102, 51, 204, 0.22);
+  border-radius: 18px;
+  padding: 13px 14px;
+  font-size: 15px;
+  outline: none;
+  background: #fff;
+  color: #24113a;
+}
+
+.timeline-form-card textarea {
+  resize: vertical;
+}
+
+.timeline-form-card input:focus,
+.timeline-form-card select:focus,
+.timeline-form-card textarea:focus {
+  border-color: #6633cc;
+  box-shadow: 0 0 0 4px rgba(102, 51, 204, 0.12);
+}
+
+.timeline-form-card button {
+  border: none;
+  border-radius: 18px;
+  padding: 14px 22px;
+  background: linear-gradient(135deg, #6633cc, #0033ff);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 14px 30px rgba(102, 51, 204, 0.24);
+}
+
+.timeline-form-card button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.timeline-list {
+  position: relative;
+}
+
+.timeline-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 24px;
+  width: 2px;
+  height: calc(100% + 18px);
+  background: rgba(102, 51, 204, 0.18);
+}
+
+.timeline-item:last-child::before {
+  display: none;
+}
+
+.timeline-dot {
+  width: 18px;
+  height: 18px;
+  margin-top: 22px;
+  border-radius: 50%;
+  background: #6633cc;
+  box-shadow: 0 0 0 6px rgba(102, 51, 204, 0.14);
+  z-index: 1;
+}
+
+.timeline-content {
+  background: #ffffff;
+  border: 1px solid rgba(102, 51, 204, 0.12);
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 12px 30px rgba(76, 35, 143, 0.08);
+}
+
+.timeline-item-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.timeline-item-header strong {
+  color: #4b238f;
+}
+
+.timeline-item-header span {
+  color: #7c6a92;
+  font-size: 13px;
+}
+
+.timeline-content p {
+  color: #4d3a61;
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+
+.timeline-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.timeline-tags span {
+  background: #f4efff;
+  color: #6633cc;
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.timeline-delete {
+  margin-top: 14px;
+  border: none;
+  background: #fff0f3;
+  color: #c9184a;
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.timeline-crise .timeline-dot {
+  background: #ff6b6b;
+}
+
+.timeline-conquista .timeline-dot {
+  background: #20c997;
+}
+
+.timeline-sono .timeline-dot {
+  background: #5c7cfa;
+}
+
+.timeline-escola .timeline-dot {
+  background: #f59f00;
+}
+
+.timeline-empty,
+.timeline-empty-text {
+  padding: 22px;
+  border-radius: 22px;
+  background: #f7f2ff;
+  color: #6633cc;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .care-timeline-page {
+    padding: 20px;
+  }
+
+  .timeline-header,
+  .timeline-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline-header h1 {
+    font-size: 28px;
+  }
+
+  .timeline-item-header {
+    flex-direction: column;
+  }
+}

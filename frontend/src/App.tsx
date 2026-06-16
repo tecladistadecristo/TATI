@@ -13,6 +13,7 @@ import DiarioCrisePage from "./pages/diario/DiarioCrisePage";
 import AgendaPage from "./pages/AgendaPage";
 import ForgotPassword from "./pages/ForgotPassword";
 import UpdatePassword from "./pages/UpdatePassword";
+import CareTimelinePage from "./pages/CareTimelinePage/CareTimelinePage";
 
 function App() {
   return (
@@ -22,6 +23,8 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/cadastro" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/linha-do-tempo/:childId" element={<CareTimelinePage />} />
 
         {/* SUA ROTA ORIGINAL */}
         <Route path="/perfil-publico" element={<PerfilPublicoPage />} />

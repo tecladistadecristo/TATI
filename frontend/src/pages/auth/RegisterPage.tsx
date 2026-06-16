@@ -1,10 +1,10 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./RegisterPage.css";
 import logo from "../../assets/logo-tati.png";
 import { supabase } from "../../lib/supabase";
 
-type CadastroTipo = "individual" | "igreja" | "escola";
+type CadastroTipo = "individual";
 
 function formatCpf(value: string) {
   return value
@@ -15,20 +15,10 @@ function formatCpf(value: string) {
     .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
 }
 
-function formatCnpj(value: string) {
-  return value
-    .replace(/\D/g, "")
-    .slice(0, 14)
-    .replace(/^(\d{2})(\d)/, "$1.$2")
-    .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
-    .replace(/\.(\d{3})(\d)/, ".$1/$2")
-    .replace(/(\d{4})(\d)/, "$1-$2");
-}
-
 export default function RegisterPage() {
   const navigate = useNavigate();
 
-  const [tipoCadastro, setTipoCadastro] = useState<CadastroTipo>("individual");
+  const [tipoCadastro] = useState<CadastroTipo>("individual");
   const [documento, setDocumento] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -37,25 +27,11 @@ export default function RegisterPage() {
   const [showRepetirSenha, setShowRepetirSenha] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const documentoLabel = useMemo(
-    () => (tipoCadastro === "individual" ? "CPF" : "CNPJ"),
-    [tipoCadastro]
-  );
-
-  const documentoPlaceholder = useMemo(
-    () =>
-      tipoCadastro === "individual"
-        ? "000.000.000-00"
-        : "00.000.000/0000-00",
-    [tipoCadastro]
-  );
+  const documentoLabel = "CPF";
+  const documentoPlaceholder = "000.000.000-00";
 
   function handleDocumentoChange(value: string) {
-    if (tipoCadastro === "individual") {
-      setDocumento(formatCpf(value));
-    } else {
-      setDocumento(formatCnpj(value));
-    }
+    setDocumento(formatCpf(value));
   }
 
   const senhasIguais =
@@ -82,16 +58,8 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const tipoUsuario =
-        tipoCadastro === "individual" ? "individual" : tipoCadastro;
-
-      const nomeTemporario =
-        tipoCadastro === "individual"
-          ? "Usuário Individual"
-          : tipoCadastro === "igreja"
-          ? "Igreja"
-          : "Escola";
-
+      const tipoUsuario = "individual";
+      const nomeTemporario = "Usuário Individual";
       const telefoneTemporario = "";
 
       const { data: usuarioExistente, error: usuarioCheckError } =
@@ -111,38 +79,20 @@ export default function RegisterPage() {
         return;
       }
 
-      if (tipoCadastro === "individual") {
-        const { data: cpfExistente, error: cpfCheckError } = await supabase
-          .from("users")
-          .select("id")
-          .eq("cpf", documentoNormalizado)
-          .maybeSingle();
+      const { data: cpfExistente, error: cpfCheckError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("cpf", documentoNormalizado)
+        .maybeSingle();
 
-        if (cpfCheckError) {
-          alert("Erro ao verificar CPF.");
-          return;
-        }
+      if (cpfCheckError) {
+        alert("Erro ao verificar CPF.");
+        return;
+      }
 
-        if (cpfExistente) {
-          alert("Este CPF já está cadastrado.");
-          return;
-        }
-      } else {
-        const { data: cnpjExistente, error: cnpjCheckError } = await supabase
-          .from("users")
-          .select("id")
-          .eq("cnpj", documentoNormalizado)
-          .maybeSingle();
-
-        if (cnpjCheckError) {
-          alert("Erro ao verificar CNPJ.");
-          return;
-        }
-
-        if (cnpjExistente) {
-          alert("Este CNPJ já está cadastrado.");
-          return;
-        }
+      if (cpfExistente) {
+        alert("Este CPF já está cadastrado.");
+        return;
       }
 
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -192,8 +142,8 @@ export default function RegisterPage() {
             tipo_usuario: tipoUsuario,
             ativo: true,
             onboarding_status: "escolher_plano",
-            cpf: tipoCadastro === "individual" ? documentoNormalizado : null,
-            cnpj: tipoCadastro === "individual" ? null : documentoNormalizado,
+            cpf: documentoNormalizado,
+            cnpj: null,
           })
           .eq("id", usuarioExistente.id);
 
@@ -211,8 +161,8 @@ export default function RegisterPage() {
           tipo_usuario: tipoUsuario,
           ativo: true,
           onboarding_status: "escolher_plano",
-          cpf: tipoCadastro === "individual" ? documentoNormalizado : null,
-          cnpj: tipoCadastro === "individual" ? null : documentoNormalizado,
+          cpf: documentoNormalizado,
+          cnpj: null,
         });
 
         if (insertUserError) {
@@ -251,7 +201,7 @@ export default function RegisterPage() {
       localStorage.removeItem("perfilPublicoId");
 
       alert("Cadastro realizado com sucesso. Agora escolha seu plano.");
-      navigate(`/planos?tipo=${tipoCadastro}`);
+      navigate("/planos");
     } finally {
       setLoading(false);
     }
@@ -265,13 +215,12 @@ export default function RegisterPage() {
 
           <h1>Crie sua conta</h1>
           <p>
-            Escolha o tipo de cadastro e preencha as informações iniciais para
-            começar no sistema.
+            Preencha as informações iniciais para começar no sistema.
           </p>
 
           <div className="register-info-box">
             Depois do cadastro inicial, continuaremos com as demais informações
-            específicas de cada perfil.
+            específicas do perfil.
           </div>
         </div>
 
@@ -279,40 +228,8 @@ export default function RegisterPage() {
           <h2>Cadastro</h2>
 
           <div className="type-selector">
-            <button
-              type="button"
-              className={tipoCadastro === "individual" ? "type-active" : ""}
-              onClick={() => {
-                setTipoCadastro("individual");
-                setDocumento("");
-              }}
-              disabled={loading}
-            >
+            <button type="button" className="type-active" disabled>
               Pessoa Física
-            </button>
-
-            <button
-              type="button"
-              className={tipoCadastro === "igreja" ? "type-active" : ""}
-              onClick={() => {
-                setTipoCadastro("igreja");
-                setDocumento("");
-              }}
-              disabled={loading}
-            >
-              Igreja
-            </button>
-
-            <button
-              type="button"
-              className={tipoCadastro === "escola" ? "type-active" : ""}
-              onClick={() => {
-                setTipoCadastro("escola");
-                setDocumento("");
-              }}
-              disabled={loading}
-            >
-              Escola
             </button>
           </div>
 

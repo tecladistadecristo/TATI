@@ -11,6 +11,7 @@ import QrCodeView from "./QrCodeView";
 import DiarioCrisePage from "../diario/DiarioCrisePage";
 import AgendaPage from "../AgendaPage";
 import PanicoPage from "../PanicoPage";
+import CareTimelinePage from "../CareTimelinePage/CareTimelinePage";
 
 type PanelView =
   | "carteirinha"
@@ -19,7 +20,8 @@ type PanelView =
   | "publico"
   | "diario"
   | "agenda"
-  | "panico";
+  | "panico"
+  | "timeline";
 
 type PlanoEscolhido = {
   nome: string;
@@ -446,6 +448,14 @@ export default function DashboardPage() {
       case "panico":
         return <PanicoPage />;
 
+      case "timeline":
+        return (
+          <CareTimelinePage
+            childId={fichaId}
+            childName={fichaSelecionada ? nomeDaFicha(fichaSelecionada) : ""}
+          />
+        );
+
       default:
         return null;
     }
@@ -533,6 +543,17 @@ export default function DashboardPage() {
           disabled={bloqueado || loadingPlano}
         >
           Ficha Funcional
+        </button>
+
+        <button
+          type="button"
+          className={`panel-action-card ${
+            activeView === "timeline" ? "active-card" : ""
+          }`}
+          onClick={() => setActiveView("timeline")}
+          disabled={bloqueado || loadingPlano || !fichaId}
+        >
+          Linha do Tempo
         </button>
 
         <button
