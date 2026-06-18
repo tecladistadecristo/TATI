@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import AppLayout from "../../components/AppLayout";
+import "../dashboard/DashboardPage.css";
 import "./CareTimelinePage.css";
 
 import {
@@ -10,6 +12,8 @@ import {
 
 import type {
   TimelineEventType,
+  TimelineImportanceLevel,
+  TimelineObservedArea,
   TimelineRecord,
 } from "../../types/timeline";
 
@@ -33,11 +37,35 @@ const eventOptions: {
   { value: "comportamento", label: "Comportamento" },
 ];
 
+const areaOptions: {
+  value: TimelineObservedArea;
+  label: string;
+}[] = [
+  { value: "comunicacao", label: "Comunicação" },
+  { value: "comportamento", label: "Comportamento" },
+  { value: "escola", label: "Escola" },
+  { value: "alimentacao", label: "Alimentação" },
+  { value: "sono", label: "Sono" },
+  { value: "saude", label: "Saúde" },
+  { value: "socializacao", label: "Socialização" },
+  { value: "autonomia", label: "Autonomia" },
+];
+
+const importanceOptions: {
+  value: TimelineImportanceLevel;
+  label: string;
+}[] = [
+  { value: "rotina", label: "🟢 Rotina" },
+  { value: "atencao", label: "🟡 Atenção" },
+  { value: "importante", label: "🔴 Importante" },
+];
+
 export default function CareTimelinePage({
   childId,
   childName,
 }: Props) {
   const params = useParams();
+  const navigate = useNavigate();
 
   const finalChildId = childId || params.childId || "";
 
@@ -50,6 +78,9 @@ export default function CareTimelinePage({
 
   const [mood, setMood] = useState("");
   const [sleepQuality, setSleepQuality] = useState("");
+  const [authorRole, setAuthorRole] = useState("");
+  const [observedArea, setObservedArea] = useState("");
+  const [importanceLevel, setImportanceLevel] = useState("");
   const [description, setDescription] = useState("");
 
   async function loadTimeline() {
@@ -57,12 +88,10 @@ export default function CareTimelinePage({
 
     try {
       setLoading(true);
-
       const data = await getTimeline(finalChildId);
-
       setRecords(data || []);
     } catch (error) {
-      console.error(error);
+      console.error("Erro ao carregar linha do tempo:", error);
     } finally {
       setLoading(false);
     }
@@ -73,14 +102,10 @@ export default function CareTimelinePage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finalChildId]);
 
-  async function handleSubmit(
-    e: React.FormEvent<HTMLFormElement>
-  ) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if (!finalChildId || !description.trim()) {
-      return;
-    }
+    if (!finalChildId || !description.trim()) return;
 
     try {
       setSaving(true);
@@ -90,18 +115,27 @@ export default function CareTimelinePage({
         event_type: eventType,
         mood,
         sleep_quality: sleepQuality,
+        author_role: authorRole,
+        observed_area: observedArea
+          ? (observedArea as TimelineObservedArea)
+          : undefined,
+        importance_level: importanceLevel
+          ? (importanceLevel as TimelineImportanceLevel)
+          : undefined,
         description,
-        author_role: "Responsável",
       });
 
       setDescription("");
       setMood("");
       setSleepQuality("");
+      setAuthorRole("");
+      setObservedArea("");
+      setImportanceLevel("");
       setEventType("observacao");
 
       await loadTimeline();
     } catch (error) {
-      console.error(error);
+      console.error("Erro ao salvar registro:", error);
       alert("Erro ao salvar registro.");
     } finally {
       setSaving(false);
@@ -109,9 +143,7 @@ export default function CareTimelinePage({
   }
 
   async function handleDelete(id: string) {
-    const ok = window.confirm(
-      "Deseja excluir este registro?"
-    );
+    const ok = window.confirm("Deseja excluir este registro?");
 
     if (!ok) return;
 
@@ -119,9 +151,44 @@ export default function CareTimelinePage({
       await deleteTimelineRecord(id);
       await loadTimeline();
     } catch (error) {
-      console.error(error);
+      console.error("Erro ao excluir registro:", error);
       alert("Erro ao excluir registro.");
     }
+  }
+
+  function generateAlert() {
+    const last7Days = records.filter((record) => {
+      const created = new Date(record.created_at);
+      const diffDays =
+        (Date.now() - created.getTime()) / (1000 * 60 * 60 * 24);
+
+      return diffDays <= 7;
+    });
+
+    const crises = last7Days.filter(
+      (record) => record.event_type === "crise"
+    ).length;
+
+    const important = last7Days.filter(
+      (record) => record.importance_level === "importante"
+    ).length;
+
+    const sleepIssues = last7Days.filter(
+      (record) =>
+        record.sleep_quality === "ruim" ||
+        record.observed_area === "sono" ||
+        record.event_type === "sono"
+    ).length;
+
+    if (crises >= 3 || important >= 3) {
+      return "⚠️ Atenção: há registros importantes recorrentes nos últimos 7 dias. Recomenda-se acompanhar de perto e compartilhar com a rede de cuidado.";
+    }
+
+    if (sleepIssues >= 3) {
+      return "⚠️ Observação: houve registros frequentes relacionados ao sono nos últimos 7 dias. Pode ser útil observar rotina noturna, horários e possíveis gatilhos.";
+    }
+
+    return "✅ Nenhum alerta relevante identificado recentemente.";
   }
 
   if (!finalChildId) {
@@ -132,7 +199,7 @@ export default function CareTimelinePage({
     );
   }
 
-  return (
+  const content = (
     <main className="care-timeline-page">
       <section className="timeline-header">
         <div>
@@ -143,8 +210,7 @@ export default function CareTimelinePage({
           <h1>Linha do Tempo do Cuidado</h1>
 
           <p>
-            Registre acontecimentos, observações,
-            crises, conquistas e evolução.
+            Registre acontecimentos, observações, crises, conquistas e evolução.
           </p>
 
           {childName && (
@@ -152,6 +218,11 @@ export default function CareTimelinePage({
               <strong>{childName}</strong>
             </p>
           )}
+        </div>
+
+        <div className="timeline-alert-card">
+          <strong>Observação TATI</strong>
+          <p>{generateAlert()}</p>
         </div>
       </section>
 
@@ -162,20 +233,14 @@ export default function CareTimelinePage({
           <div className="timeline-grid">
             <label>
               Tipo
-
               <select
                 value={eventType}
                 onChange={(e) =>
-                  setEventType(
-                    e.target.value as TimelineEventType
-                  )
+                  setEventType(e.target.value as TimelineEventType)
                 }
               >
                 {eventOptions.map((item) => (
-                  <option
-                    key={item.value}
-                    value={item.value}
-                  >
+                  <option key={item.value} value={item.value}>
                     {item.label}
                   </option>
                 ))}
@@ -184,91 +249,92 @@ export default function CareTimelinePage({
 
             <label>
               Humor
-
-              <select
-                value={mood}
-                onChange={(e) =>
-                  setMood(e.target.value)
-                }
-              >
-                <option value="">
-                  Não informar
-                </option>
-
-                <option value="bem">
-                  Bem
-                </option>
-
-                <option value="neutro">
-                  Neutro
-                </option>
-
-                <option value="irritado">
-                  Irritado
-                </option>
-
-                <option value="triste">
-                  Triste
-                </option>
-
-                <option value="ansioso">
-                  Ansioso
-                </option>
+              <select value={mood} onChange={(e) => setMood(e.target.value)}>
+                <option value="">Não informar</option>
+                <option value="bem">Bem</option>
+                <option value="neutro">Neutro</option>
+                <option value="irritado">Irritado</option>
+                <option value="triste">Triste</option>
+                <option value="ansioso">Ansioso</option>
               </select>
             </label>
 
             <label>
               Sono
-
               <select
                 value={sleepQuality}
-                onChange={(e) =>
-                  setSleepQuality(
-                    e.target.value
-                  )
-                }
+                onChange={(e) => setSleepQuality(e.target.value)}
               >
-                <option value="">
-                  Não informar
-                </option>
+                <option value="">Não informar</option>
+                <option value="bom">Bom</option>
+                <option value="regular">Regular</option>
+                <option value="ruim">Ruim</option>
+              </select>
+            </label>
 
-                <option value="bom">
-                  Bom
-                </option>
+            <label>
+              Quem registrou
+              <select
+                value={authorRole}
+                onChange={(e) => setAuthorRole(e.target.value)}
+              >
+                <option value="">Não informar</option>
+                <option value="Mãe">👩 Mãe</option>
+                <option value="Pai">👨 Pai</option>
+                <option value="Professor">👩‍🏫 Professor</option>
+                <option value="Escola">🏫 Escola</option>
+                <option value="Psicólogo">🧠 Psicólogo</option>
+                <option value="Neuropsicólogo">🧠 Neuropsicólogo</option>
+                <option value="Fonoaudiólogo">💬 Fonoaudiólogo</option>
+                <option value="Médico">🏥 Médico</option>
+                <option value="Cuidador">🤝 Cuidador</option>
+                <option value="Outro">Outro</option>
+              </select>
+            </label>
 
-                <option value="regular">
-                  Regular
-                </option>
+            <label>
+              Área observada
+              <select
+                value={observedArea}
+                onChange={(e) => setObservedArea(e.target.value)}
+              >
+                <option value="">Não informar</option>
+                {areaOptions.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-                <option value="ruim">
-                  Ruim
-                </option>
+            <label>
+              Importância
+              <select
+                value={importanceLevel}
+                onChange={(e) => setImportanceLevel(e.target.value)}
+              >
+                <option value="">Não informar</option>
+                {importanceOptions.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label}
+                  </option>
+                ))}
               </select>
             </label>
           </div>
 
           <label>
             Descrição
-
             <textarea
               rows={5}
               value={description}
-              onChange={(e) =>
-                setDescription(
-                  e.target.value
-                )
-              }
+              onChange={(e) => setDescription(e.target.value)}
               placeholder="Descreva o ocorrido..."
             />
           </label>
 
-          <button
-            type="submit"
-            disabled={saving}
-          >
-            {saving
-              ? "Salvando..."
-              : "Salvar Registro"}
+          <button type="submit" disabled={saving}>
+            {saving ? "Salvando..." : "Salvar Registro"}
           </button>
         </form>
       </section>
@@ -276,56 +342,48 @@ export default function CareTimelinePage({
       <section className="timeline-list">
         <h2>Histórico</h2>
 
-        {loading && (
-          <p>Carregando registros...</p>
-        )}
+        {loading && <p>Carregando registros...</p>}
 
-        {!loading &&
-          records.length === 0 && (
-            <p className="timeline-empty-text">
-              Nenhum registro encontrado.
-            </p>
-          )}
+        {!loading && records.length === 0 && (
+          <p className="timeline-empty-text">
+            Nenhum registro encontrado.
+          </p>
+        )}
 
         {records.map((record) => (
           <article
             key={record.id}
-            className="timeline-item"
+            className={`timeline-item timeline-${record.event_type}`}
           >
             <div className="timeline-dot" />
 
             <div className="timeline-content">
               <div className="timeline-item-header">
-                <strong>
-                  {
-                    eventOptions.find(
-                      (e) =>
-                        e.value ===
-                        record.event_type
-                    )?.label
-                  }
-                </strong>
+                <strong>{formatEventType(record.event_type)}</strong>
 
                 <span>
-                  {new Date(
-                    record.created_at
-                  ).toLocaleString("pt-BR")}
+                  {new Date(record.created_at).toLocaleString("pt-BR")}
                 </span>
               </div>
 
               <p>{record.description}</p>
 
               <div className="timeline-tags">
-                {record.mood && (
-                  <span>
-                    Humor: {record.mood}
-                  </span>
-                )}
+                {record.mood && <span>Humor: {record.mood}</span>}
 
                 {record.sleep_quality && (
+                  <span>Sono: {record.sleep_quality}</span>
+                )}
+
+                {record.author_role && <span>👤 {record.author_role}</span>}
+
+                {record.observed_area && (
+                  <span>📍 {formatObservedArea(record.observed_area)}</span>
+                )}
+
+                {record.importance_level && (
                   <span>
-                    Sono:{" "}
-                    {record.sleep_quality}
+                    {formatImportance(record.importance_level)}
                   </span>
                 )}
               </div>
@@ -333,9 +391,7 @@ export default function CareTimelinePage({
               <button
                 type="button"
                 className="timeline-delete"
-                onClick={() =>
-                  handleDelete(record.id)
-                }
+                onClick={() => handleDelete(record.id)}
               >
                 Excluir
               </button>
@@ -345,4 +401,113 @@ export default function CareTimelinePage({
       </section>
     </main>
   );
+
+  if (childId) {
+    return content;
+  }
+
+  const goDashboard = (etapa?: string) => {
+    const params = new URLSearchParams();
+
+    if (etapa) params.set("etapa", etapa);
+    if (finalChildId) params.set("childId", finalChildId);
+
+    navigate(`/dashboard${params.toString() ? `?${params.toString()}` : ""}`);
+  };
+
+  const sidebarContent = (
+    <div className="dashboard-sidebar">
+      <section className="selected-profile-card">
+        <p className="section-label">Perfil selecionado</p>
+        <h2>{childName || "Linha do Tempo"}</h2>
+        <p>Registre e acompanhe acontecimentos importantes do cuidado.</p>
+
+        <button
+          className="primary-btn"
+          type="button"
+          onClick={() => goDashboard("ficha")}
+          disabled={!finalChildId}
+        >
+          Editar ficha
+        </button>
+      </section>
+
+      <section className="panel-actions-grid">
+        <button type="button" className="panel-action-card" onClick={() => goDashboard()}>
+          Carteirinha Digital
+        </button>
+
+        <button type="button" className="panel-action-card" onClick={() => goDashboard("qrcode")}>
+          QR Code
+        </button>
+
+        <button type="button" className="panel-action-card" onClick={() => goDashboard("ficha")}>
+          Ficha Funcional
+        </button>
+
+        <button type="button" className="panel-action-card active-card" onClick={() => goDashboard("timeline")}>
+          Linha do Tempo
+        </button>
+
+        <button type="button" className="panel-action-card" onClick={() => goDashboard("insights")}>
+          📈 Evolução do Cuidado
+        </button>
+
+        <button
+          type="button"
+          className="panel-action-card ai-patterns-card"
+          onClick={() => navigate(`/care-patterns?childId=${finalChildId}`)}
+          disabled={!finalChildId}
+        >
+          🧠 IA de Padrões
+        </button>
+
+        <button
+          type="button"
+          className="panel-action-card"
+          onClick={() =>
+            finalChildId
+              ? window.open(`/publico/${finalChildId}`, "_blank", "noopener,noreferrer")
+              : goDashboard()
+          }
+          disabled={!finalChildId}
+        >
+          Perfil Público
+        </button>
+
+        <button type="button" className="panel-action-card" onClick={() => goDashboard("diario")}>
+          Diário
+        </button>
+
+        <button type="button" className="panel-action-card" onClick={() => goDashboard("agenda")}>
+          Agenda
+        </button>
+
+        <button type="button" className="panel-action-card" onClick={() => goDashboard("panico")}>
+          Botão de Pânico
+        </button>
+      </section>
+    </div>
+  );
+
+  return (
+    <AppLayout title="Linha do Tempo" sidebarContent={sidebarContent}>
+      {content}
+    </AppLayout>
+  );
+}
+
+function formatEventType(type: TimelineEventType) {
+  const found = eventOptions.find((item) => item.value === type);
+  return found?.label || type;
+}
+
+function formatObservedArea(area: string) {
+  const found = areaOptions.find((item) => item.value === area);
+  return found?.label || area;
+}
+
+function formatImportance(level: string) {
+  const found = importanceOptions.find((item) => item.value === level);
+  return found?.label || level;
 }

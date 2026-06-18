@@ -66,6 +66,19 @@
   color: rgba(255, 255, 255, 0.96);
 }
 
+.profile-select {
+  width: 100%;
+  margin: 0 0 14px;
+  padding: 13px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  background: rgba(255, 255, 255, 0.95);
+  color: #4b1843;
+  font-size: 0.95rem;
+  font-weight: 700;
+  outline: none;
+}
+
 /* ===================== PLANO ===================== */
 
 .plan-badge {
@@ -142,7 +155,6 @@
   transition: all 0.2s ease;
 }
 
-/* HOVER AMARELO 🔥 */
 .panel-action-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 14px 24px rgba(145, 54, 128, 0.22);
@@ -150,7 +162,6 @@
   color: #5c2a00;
 }
 
-/* BOTÃO ATIVO */
 .panel-action-card.active-card {
   background: #ffffff;
   color: #8f2f83;
@@ -158,18 +169,47 @@
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.06);
 }
 
-/* ATIVO + HOVER */
 .panel-action-card.active-card:hover {
   background: #e5f323;
   color: #5c2a00;
 }
 
-/* DESABILITADO */
 .panel-action-card:disabled {
   opacity: 0.55;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+}
+
+/* ===================== IA DE PADRÕES ===================== */
+
+.ai-patterns-card {
+  background: linear-gradient(135deg, #5b1f83 0%, #a74897 55%, #d783c4 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-patterns-card::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.28),
+    transparent 55%
+  );
+  opacity: 0.7;
+  transform: translateX(-35%);
+  transition: transform 0.35s ease;
+}
+
+.ai-patterns-card:hover::before {
+  transform: translateX(25%);
+}
+
+.ai-patterns-card:hover {
+  background: #e5f323;
+  color: #5c2a00;
 }
 
 /* ===================== BLOQUEIO ===================== */

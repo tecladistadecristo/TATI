@@ -14,6 +14,7 @@ import AgendaPage from "./pages/AgendaPage";
 import ForgotPassword from "./pages/ForgotPassword";
 import UpdatePassword from "./pages/UpdatePassword";
 import CareTimelinePage from "./pages/CareTimelinePage/CareTimelinePage";
+import CarePatternsPage from "./pages/CarePatternsPage/CarePatternsPage";
 
 function App() {
   return (
@@ -23,24 +24,34 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/cadastro" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/admin" element={<AdminPage />} />
-        <Route path="/linha-do-tempo/:childId" element={<CareTimelinePage />} />
-
-        {/* SUA ROTA ORIGINAL */}
-        <Route path="/perfil-publico" element={<PerfilPublicoPage />} />
-
-        {/* QR CODE */}
-        <Route path="/publico/:id" element={<PerfilPublicoPage />} />
-
-        {/* 🔥 NOVAS ROTAS (AGORA NO LUGAR CERTO) */}
-        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/update-password" element={<UpdatePassword />} />
+
+        <Route path="/perfil-publico" element={<PerfilPublicoPage />} />
+        <Route path="/publico/:id" element={<PerfilPublicoPage />} />
 
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
               <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/linha-do-tempo/:childId"
+          element={
+            <ProtectedRoute>
+              <CareTimelinePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/care-patterns"
+          element={
+            <ProtectedRoute>
+              <CarePatternsPage />
             </ProtectedRoute>
           }
         />

@@ -1,0 +1,420 @@
+.care-patterns-page {
+  padding: 32px;
+}
+
+.patterns-header {
+  background: linear-gradient(135deg, #ffffff, #f7f2ff);
+  border-radius: 28px;
+  padding: 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.patterns-badge,
+.wellbeing-badge {
+  display: inline-block;
+  background: #efe5ff;
+  color: #6d28d9;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.patterns-header h1 {
+  margin: 0;
+  color: #4b1d7a;
+  font-size: 2rem;
+}
+
+.patterns-header p {
+  color: #666;
+  max-width: 760px;
+  line-height: 1.6;
+  margin: 12px auto 0;
+}
+
+.wellbeing-card {
+  margin-bottom: 24px;
+  padding: 28px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #a74897, #d783c4);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 16px 34px rgba(167, 72, 151, 0.22);
+}
+
+.wellbeing-card h2 {
+  margin: 10px 0 4px;
+  font-size: 3rem;
+  color: #ffffff;
+}
+
+.wellbeing-card p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.wellbeing-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.18);
+  border: 8px solid rgba(255, 255, 255, 0.45);
+  font-size: 1.6rem;
+  font-weight: 900;
+}
+
+.patterns-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(167, 72, 151, 0.08);
+  text-align: center;
+}
+
+.stat-card span {
+  font-size: 28px;
+}
+
+.stat-card strong {
+  display: block;
+  font-size: 30px;
+  margin-top: 10px;
+  color: #4b1d7a;
+}
+
+.stat-card small {
+  color: #777;
+}
+
+.patterns-grid,
+.patterns-charts-grid,
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.patterns-grid {
+  margin-bottom: 24px;
+}
+
+.pattern-card,
+.patterns-chart-card,
+.chart-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(167, 72, 151, 0.08);
+}
+
+.pattern-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 170px;
+}
+
+.pattern-icon {
+  min-width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  font-size: 30px;
+  background: #f7eafd;
+}
+
+.pattern-content {
+  width: 100%;
+  text-align: center;
+}
+
+.pattern-content h2 {
+  margin: 8px 0;
+  color: #321552;
+  text-align: center;
+}
+
+.pattern-content p {
+  margin: 0;
+  color: #666;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.pattern-level {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.pattern-alto .pattern-level {
+  background: #ffe7e7;
+  color: #b42318;
+}
+
+.pattern-moderado .pattern-level {
+  background: #fff4d8;
+  color: #9a6700;
+}
+
+.pattern-baixo .pattern-level {
+  background: #e8f1ff;
+  color: #175cd3;
+}
+
+.pattern-positivo .pattern-level {
+  background: #e8fff3;
+  color: #027a48;
+}
+
+/* GRÁFICOS EM CARDS */
+
+.patterns-charts-grid,
+.charts-grid {
+  margin-top: 24px;
+  margin-bottom: 24px;
+}
+
+.patterns-chart-card,
+.chart-card {
+  min-height: 300px;
+  text-align: center;
+}
+
+.patterns-chart-title,
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.patterns-chart-title span,
+.chart-header span {
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: #f7eafd;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.patterns-chart-title strong,
+.chart-header h3 {
+  color: #4b1d7a;
+  font-size: 1.16rem;
+  margin: 0;
+}
+
+.patterns-chart-title p,
+.chart-header p {
+  margin: 4px 0 0;
+  color: #666;
+  line-height: 1.4;
+}
+
+.chart-wrapper,
+.chart-box {
+  width: 100%;
+  min-height: 260px;
+}
+
+.empty-chart-box,
+.chart-empty {
+  min-height: 160px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: #fbf6ff;
+  color: #6d5173;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* TENDÊNCIA E ALERTAS */
+
+.patterns-footer {
+  margin-top: 24px;
+  padding: 22px;
+  border-radius: 24px;
+  background: #fff9e8;
+  border: 1px solid #ffe08a;
+  color: #5c4200;
+  text-align: center;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+}
+
+.patterns-footer strong {
+  display: block;
+  color: #4b1d00;
+  font-size: 1.05rem;
+}
+
+.patterns-footer p {
+  margin: 8px 0 0;
+  line-height: 1.5;
+}
+
+/* RECOMENDAÇÕES */
+
+.recommendations-card {
+  margin-top: 24px;
+  padding: 24px;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(167, 72, 151, 0.1);
+  text-align: center;
+}
+
+.recommendations-title {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.recommendations-title span {
+  font-size: 30px;
+}
+
+.recommendations-title strong {
+  color: #4b1d7a;
+  font-size: 1.25rem;
+}
+
+.recommendations-title p {
+  margin: 4px 0 0;
+  color: #666;
+}
+
+.recommendations-list {
+  display: grid;
+  gap: 12px;
+}
+
+.recommendation-item {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #f9f1ff;
+  color: #4b1d7a;
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* BOTÃO PDF */
+
+.patterns-pdf-button {
+  margin-top: 20px;
+  border: none;
+  cursor: pointer;
+  padding: 14px 22px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #8b2d84, #b94ea9);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 800;
+  box-shadow: 0 10px 22px rgba(139, 45, 132, 0.22);
+  transition: all 0.25s ease;
+}
+
+.patterns-pdf-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(139, 45, 132, 0.28);
+  background: #e5f323;
+  color: #5c2a00;
+}
+
+/* LOADING */
+
+.patterns-loading {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 36px;
+  display: grid;
+  place-items: center;
+  gap: 14px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.patterns-spinner {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 4px solid #eadcff;
+  border-top-color: #a74897;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 900px) {
+  .patterns-stats,
+  .patterns-grid,
+  .patterns-charts-grid,
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .care-patterns-page {
+    padding: 16px;
+  }
+
+  .patterns-header {
+    padding: 24px;
+  }
+
+  .wellbeing-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .wellbeing-circle {
+    width: 100px;
+    height: 100px;
+    font-size: 1.3rem;
+  }
+
+  .patterns-chart-title,
+  .chart-header {
+    flex-direction: column;
+  }
+}

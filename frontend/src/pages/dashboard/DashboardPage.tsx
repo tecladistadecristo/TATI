@@ -12,6 +12,7 @@ import DiarioCrisePage from "../diario/DiarioCrisePage";
 import AgendaPage from "../AgendaPage";
 import PanicoPage from "../PanicoPage";
 import CareTimelinePage from "../CareTimelinePage/CareTimelinePage";
+import CareInsightsPage from "../CareInsightsPage/CareInsightsPage";
 
 type PanelView =
   | "carteirinha"
@@ -21,7 +22,8 @@ type PanelView =
   | "diario"
   | "agenda"
   | "panico"
-  | "timeline";
+  | "timeline"
+  | "insights";
 
 type PlanoEscolhido = {
   nome: string;
@@ -151,9 +153,7 @@ function usuarioTemPlanoAtivo(userRow: UserRow) {
   ];
 
   if (!statusLiberados.includes(status)) return false;
-
   if (status === "gratuito") return true;
-
   if (!userRow.data_expiracao) return true;
 
   return new Date(userRow.data_expiracao) > new Date();
@@ -163,6 +163,7 @@ export default function DashboardPage() {
   const query = useQuery();
   const navigate = useNavigate();
   const etapa = query.get("etapa");
+  const queryChildId = query.get("childId") || "";
 
   const [activeView, setActiveView] = useState<PanelView>("carteirinha");
   const [plano, setPlano] = useState<PlanoEscolhido | null>(null);
@@ -241,7 +242,7 @@ export default function DashboardPage() {
         }
 
         const fichaSalvaId =
-          localStorage.getItem("ficha_funcional_selecionada_id") || "";
+          queryChildId || localStorage.getItem("ficha_funcional_selecionada_id") || "";
 
         const fichaInicial =
           lista.find((item) => item.id === fichaSalvaId) || lista[0];
@@ -257,7 +258,7 @@ export default function DashboardPage() {
     }
 
     void carregarFichasDoSupabase();
-  }, []);
+  }, [queryChildId]);
 
   useEffect(() => {
     async function carregarPlanoDoSupabase() {
@@ -345,8 +346,38 @@ export default function DashboardPage() {
   }, [navigate]);
 
   useEffect(() => {
-    if (etapa === "ficha-funcional") {
+    if (etapa === "ficha-funcional" || etapa === "ficha") {
       setActiveView("ficha");
+      return;
+    }
+
+    if (etapa === "qrcode") {
+      setActiveView("qrcode");
+      return;
+    }
+
+    if (etapa === "timeline" || etapa === "linha-do-tempo") {
+      setActiveView("timeline");
+      return;
+    }
+
+    if (etapa === "insights" || etapa === "evolucao") {
+      setActiveView("insights");
+      return;
+    }
+
+    if (etapa === "diario") {
+      setActiveView("diario");
+      return;
+    }
+
+    if (etapa === "agenda") {
+      setActiveView("agenda");
+      return;
+    }
+
+    if (etapa === "panico") {
+      setActiveView("panico");
       return;
     }
 
@@ -361,7 +392,6 @@ export default function DashboardPage() {
 
   function handleSelecionarFicha(id: string) {
     const selecionada = fichas.find((item) => item.id === id);
-
     if (!selecionada) return;
 
     setFichaSelecionada(selecionada);
@@ -456,6 +486,14 @@ export default function DashboardPage() {
           />
         );
 
+      case "insights":
+        return (
+          <CareInsightsPage
+            childId={fichaId}
+            childName={fichaSelecionada ? nomeDaFicha(fichaSelecionada) : ""}
+          />
+        );
+
       default:
         return null;
     }
@@ -488,8 +526,8 @@ export default function DashboardPage() {
 
         {fichas.length > 0 && (
           <p>
-            Selecione qual ficha deseja visualizar para gerar a carteirinha,
-            QR Code ou editar os dados.
+            Selecione qual ficha deseja visualizar para gerar a carteirinha, QR
+            Code ou editar os dados.
           </p>
         )}
 
@@ -554,6 +592,26 @@ export default function DashboardPage() {
           disabled={bloqueado || loadingPlano || !fichaId}
         >
           Linha do Tempo
+        </button>
+
+        <button
+          type="button"
+          className={`panel-action-card ${
+            activeView === "insights" ? "active-card" : ""
+          }`}
+          onClick={() => setActiveView("insights")}
+          disabled={bloqueado || loadingPlano || !fichaId}
+        >
+          📈 Evolução do Cuidado
+        </button>
+
+        <button
+          type="button"
+          className="panel-action-card ai-patterns-card"
+          onClick={() => navigate(`/care-patterns?childId=${fichaId}`)}
+          disabled={bloqueado || loadingPlano || !fichaId}
+        >
+          🧠 IA de Padrões
         </button>
 
         <button

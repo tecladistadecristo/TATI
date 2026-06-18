@@ -63,15 +63,8 @@
 .logo-tati-publica {
   width: 120px;
   height: 64px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #9c4a8f, #c56ab7);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 28px;
-  letter-spacing: 1px;
+  object-fit: contain;
+  display: block;
   flex-shrink: 0;
 }
 
@@ -178,6 +171,12 @@
 .btn-action:hover {
   transform: translateY(-1px);
   opacity: 0.95;
+}
+
+.btn-action:disabled {
+  opacity: 0.7;
+  cursor: wait;
+  transform: none;
 }
 
 .btn-whatsapp {
@@ -330,6 +329,11 @@
 }
 
 @media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
   .no-print {
     display: none !important;
   }

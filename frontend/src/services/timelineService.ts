@@ -12,10 +12,12 @@ export async function getTimeline(
     .from("care_timeline")
     .select("*")
     .eq("child_id", childId)
-    .order("created_at", { ascending: false });
+    .order("created_at", {
+      ascending: false,
+    });
 
   if (error) {
-    console.error("Erro ao buscar linha do tempo:", error);
+    console.error(error);
     throw error;
   }
 
@@ -27,13 +29,7 @@ export async function createTimelineRecord(
 ): Promise<TimelineRecord> {
   const {
     data: { user },
-    error: authError,
   } = await supabase.auth.getUser();
-
-  if (authError) {
-    console.error("Erro ao obter usuário:", authError);
-    throw authError;
-  }
 
   if (!user) {
     throw new Error("Usuário não autenticado");
@@ -43,19 +39,32 @@ export async function createTimelineRecord(
     .from("care_timeline")
     .insert({
       user_id: user.id,
+
       child_id: payload.child_id,
+
       author_name: payload.author_name || null,
-      author_role: payload.author_role || "Responsável",
+      author_role: payload.author_role || null,
+
       event_type: payload.event_type,
+
+      observed_area:
+        payload.observed_area || null,
+
+      importance_level:
+        payload.importance_level || null,
+
       mood: payload.mood || null,
-      sleep_quality: payload.sleep_quality || null,
+
+      sleep_quality:
+        payload.sleep_quality || null,
+
       description: payload.description,
     })
     .select("*")
     .single();
 
   if (error) {
-    console.error("Erro ao criar registro na linha do tempo:", error);
+    console.error(error);
     throw error;
   }
 
@@ -71,7 +80,7 @@ export async function deleteTimelineRecord(
     .eq("id", id);
 
   if (error) {
-    console.error("Erro ao excluir registro da linha do tempo:", error);
+    console.error(error);
     throw error;
   }
 }

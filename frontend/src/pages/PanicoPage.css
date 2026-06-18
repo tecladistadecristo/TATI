@@ -38,6 +38,16 @@
   font-size: 18px;
   font-weight: 800;
   cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.panico-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.panico-btn:disabled {
+  cursor: wait;
+  opacity: 0.75;
 }
 
 .panico-alerta {
@@ -45,4 +55,11 @@
   margin-top: 22px;
   color: #777;
   font-size: 13px;
+  line-height: 1.5;
+}
+
+.panico-contato {
+  margin: 18px 0 6px;
+  font-size: 14px;
+  color: #5c2456;
 }
