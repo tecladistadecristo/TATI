@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import "./AppLayout.css";
 import logo from "../assets/logo-tati.png";
 import { supabase } from "../lib/supabase";
@@ -16,20 +16,38 @@ export default function AppLayout({
   sidebarContent,
 }: AppLayoutProps) {
   const navigate = useNavigate();
+  const [menuAberto, setMenuAberto] = useState(false);
 
   async function handleLogout() {
     await supabase.auth.signOut();
     navigate("/login");
   }
 
+  function handleSidebarClick(event: React.MouseEvent<HTMLElement>) {
+    const alvo = event.target as HTMLElement;
+    const clicouEmBotao = alvo.closest("button");
+    const clicouEmSelect = alvo.closest("select");
+
+    if (clicouEmBotao && !clicouEmSelect) {
+      window.setTimeout(() => setMenuAberto(false), 120);
+    }
+  }
+
   return (
-    <div className="app-layout">
-      <aside className="app-sidebar">
+    <div className={`app-layout ${menuAberto ? "mobile-menu-open" : ""}`}>
+      <button
+        className="mobile-menu-overlay"
+        type="button"
+        aria-label="Fechar menu"
+        onClick={() => setMenuAberto(false)}
+      />
+
+      <aside className="app-sidebar" onClick={handleSidebarClick}>
         <div className="app-brand">
           <img src={logo} alt="TATI" />
         </div>
 
-        <button className="logout-btn" onClick={handleLogout}>
+        <button className="logout-btn" type="button" onClick={handleLogout}>
           Sair
         </button>
 
@@ -38,6 +56,19 @@ export default function AppLayout({
 
       <div className="app-main">
         <header className="app-header">
+          <button
+            className="mobile-menu-btn"
+            type="button"
+            aria-label="Abrir menu"
+            onClick={() => setMenuAberto(true)}
+          >
+            ☰
+          </button>
+
+          <div className="mobile-header-brand">
+            <img src={logo} alt="TATI" />
+          </div>
+
           <h1>{title}</h1>
         </header>
 

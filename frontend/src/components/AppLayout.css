@@ -11,6 +11,11 @@ body,
   box-sizing: border-box;
 }
 
+body {
+  overflow-x: hidden;
+  background: #f3eef5;
+}
+
 .app-layout {
   display: flex;
   min-height: 100vh;
@@ -22,6 +27,7 @@ body,
 /* SIDEBAR DESKTOP */
 .app-sidebar {
   width: 220px;
+  min-width: 220px;
   min-height: 100vh;
   background: linear-gradient(180deg, #8f3f85, #6f2f67);
   display: flex;
@@ -29,10 +35,9 @@ body,
   align-items: center;
   padding: 16px;
   gap: 12px;
-  flex-shrink: 0;
+  overflow-y: auto;
 }
 
-/* LOGO */
 .app-brand {
   display: flex;
   justify-content: center;
@@ -43,10 +48,9 @@ body,
 .app-brand img {
   width: 110px;
   height: auto;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
-/* BOTÃO SAIR */
 .logout-btn {
   margin-top: 10px;
   width: 100%;
@@ -66,7 +70,6 @@ body,
   color: #3b2340;
 }
 
-/* CARD PERFIL */
 .selected-profile-card {
   width: 100%;
   background: linear-gradient(180deg, #b85aa9, #9c4a8f);
@@ -86,6 +89,17 @@ body,
   margin: 6px 0;
   color: #000;
   font-weight: 800;
+}
+
+.profile-select {
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  padding: 12px;
+  font-weight: 700;
+  color: #8f3f85;
+  background: #ffffff;
+  outline: none;
 }
 
 .plan-badge {
@@ -120,11 +134,12 @@ body,
 }
 
 .panel-action-card {
+  width: 100%;
   background: linear-gradient(180deg, #b85aa9, #9c4a8f);
   border: none;
   border-radius: 14px;
   padding: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: #fff;
   font-size: 13px;
   cursor: pointer;
@@ -147,9 +162,9 @@ body,
 .app-main {
   flex: 1;
   width: calc(100% - 220px);
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  min-width: 0;
 }
 
 .app-header {
@@ -158,6 +173,9 @@ body,
   padding: 20px 28px;
   border-bottom: 1px solid #e9e3eb;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
 .app-header h1 {
@@ -169,181 +187,75 @@ body,
 .app-content {
   width: 100%;
   padding: 24px;
-  min-width: 0;
+}
+
+.mobile-menu-btn,
+.mobile-menu-overlay,
+.mobile-header-brand {
+  display: none;
 }
 
 /* TABLET */
-@media (min-width: 701px) and (max-width: 1024px) {
+@media (max-width: 1024px) {
   .app-sidebar {
-    width: 190px;
+    width: 200px;
+    min-width: 200px;
     padding: 14px;
   }
 
   .app-main {
-    width: calc(100% - 190px);
-  }
-
-  .app-content {
-    padding: 18px;
-  }
-
-  .panel-action-card {
-    font-size: 12px;
-    padding: 11px;
+    width: calc(100% - 200px);
   }
 }
 
-/* CELULAR: topo compacto + menu inferior tipo aplicativo */
-@media (max-width: 700px) {
-  html,
-  body,
-  #root {
-    overflow-x: hidden;
-  }
-
+/* CELULAR: menu lateral recolhido */
+@media (max-width: 768px) {
   .app-layout {
-    flex-direction: column;
-    background: #f7f1f8;
+    display: block;
+    min-height: 100vh;
+    width: 100%;
+    background: #f7f0f7;
   }
 
   .app-sidebar {
-    width: 100%;
-    min-width: 100%;
-    min-height: auto;
-    background: transparent;
-    padding: 10px 10px 0;
-    gap: 8px;
-    align-items: stretch;
-  }
-
-  .app-brand {
-    padding: 6px 0 2px;
-    justify-content: flex-start;
-  }
-
-  .app-brand img {
-    width: 76px;
-  }
-
-  .logout-btn {
-    position: absolute;
-    top: 14px;
-    right: 12px;
-    width: auto;
-    min-width: 70px;
-    margin: 0;
-    padding: 9px 14px;
-    border-radius: 999px;
-    font-size: 12px;
-    box-shadow: 0 8px 18px rgba(80, 27, 75, 0.12);
-  }
-
-  .dashboard-sidebar {
-    width: 100%;
-    padding: 0;
-    gap: 8px;
-  }
-
-  .selected-profile-card {
-    width: 100%;
-    border-radius: 22px;
-    padding: 14px 14px 12px;
-    text-align: left;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 8px 10px;
-    align-items: center;
-  }
-
-  .selected-profile-card .section-label,
-  .selected-profile-card p {
-    display: none;
-  }
-
-  .selected-profile-card h2 {
-    font-size: 20px;
-    line-height: 1.1;
-    margin: 0;
-    color: #ffffff;
-  }
-
-  .profile-select {
-    grid-column: 1 / -1;
-    width: 100%;
-    margin: 2px 0 0;
-    min-height: 42px;
-    border-radius: 14px;
-    font-size: 13px;
-  }
-
-  .plan-badge {
-    grid-column: 1 / -1;
-    margin: 2px 0 0;
-    padding: 8px 10px;
-    border-radius: 14px;
-    font-size: 12px;
-    line-height: 1.25;
-  }
-
-  .selected-profile-card .primary-btn {
-    grid-column: 1 / -1;
-    width: 100%;
-    min-height: 42px;
-    margin: 2px 0 0;
-    padding: 9px 12px;
-    border-radius: 14px;
-    font-size: 13px;
-  }
-
-  .panel-actions-grid {
     position: fixed;
+    top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 999;
+    z-index: 1000;
 
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    gap: 8px;
+    width: min(86vw, 340px);
+    min-width: 0;
+    height: 100dvh;
+    min-height: 100dvh;
 
-    width: 100%;
-    padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
+    padding: 18px 14px 22px;
+    border-radius: 0 26px 26px 0;
+    box-shadow: 18px 0 45px rgba(55, 18, 51, 0.28);
 
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
+    transform: translateX(-105%);
+    transition: transform 0.25s ease;
+    overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-
-    background: rgba(255, 255, 255, 0.96);
-    border-top: 1px solid rgba(143, 63, 133, 0.16);
-    box-shadow: 0 -10px 28px rgba(75, 28, 70, 0.14);
   }
 
-  .panel-actions-grid::-webkit-scrollbar {
-    display: none;
+  .mobile-menu-open .app-sidebar {
+    transform: translateX(0);
   }
 
-  .panel-action-card {
-    flex: 0 0 112px;
-    min-height: 54px;
-    padding: 8px 9px;
-    border-radius: 16px;
-    font-size: 11px;
-    line-height: 1.15;
-    font-weight: 800;
-    box-shadow: 0 7px 14px rgba(145, 54, 128, 0.18);
-    white-space: normal;
+  .mobile-menu-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: rgba(32, 15, 32, 0.42);
+    backdrop-filter: blur(2px);
+    cursor: pointer;
   }
 
-  .panel-action-card:hover {
-    transform: none;
-  }
-
-  .panel-action-card.active-card,
-  .active-card {
-    border: 2px solid #8f3f85;
-    background: #ffffff;
-    color: #8f3f85;
+  .mobile-menu-open .mobile-menu-overlay {
+    display: block;
   }
 
   .app-main {
@@ -352,42 +264,122 @@ body,
   }
 
   .app-header {
-    display: none;
+    position: sticky;
+    top: 0;
+    z-index: 500;
+    min-height: 64px;
+    padding: 10px 12px;
+    border-radius: 0 0 22px 22px;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(10px);
+  }
+
+  .mobile-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 15px;
+    background: linear-gradient(180deg, #b85aa9, #8f3f85);
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(143, 63, 133, 0.18);
+  }
+
+  .mobile-header-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-header-brand img {
+    width: 62px;
+    height: auto;
+  }
+
+  .app-header h1 {
+    font-size: 17px;
+    line-height: 1.15;
   }
 
   .app-content {
-    width: 100%;
-    padding: 10px 10px 96px;
-    min-width: 0;
-  }
-
-  .user-panel,
-  .panel-main-content,
-  .content-box {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-  }
-
-  .content-box {
-    border-radius: 22px;
     padding: 12px;
-    min-height: auto;
+  }
+
+  .app-brand img {
+    width: 90px;
+  }
+
+  .logout-btn {
+    margin: 0 0 8px;
+    height: 42px;
+    border-radius: 999px;
+  }
+
+  .selected-profile-card {
+    padding: 14px;
+    border-radius: 20px;
+  }
+
+  .selected-profile-card h2 {
+    font-size: 22px;
+    line-height: 1.1;
+  }
+
+  .profile-select {
+    height: 42px;
+    font-size: 13px;
+  }
+
+  .plan-badge {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+
+  .primary-btn {
+    width: 100%;
+    min-height: 42px;
+  }
+
+  .panel-actions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .panel-action-card {
+    min-height: 68px;
+    padding: 10px 8px;
+    border-radius: 18px;
+    font-size: 12px;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .panel-action-card:hover {
+    transform: none;
   }
 }
 
 @media (max-width: 380px) {
-  .selected-profile-card h2 {
-    font-size: 18px;
+  .app-sidebar {
+    width: 90vw;
   }
 
   .panel-action-card {
-    flex-basis: 104px;
-    font-size: 10.5px;
+    min-height: 62px;
+    font-size: 11px;
   }
 
-  .app-content {
-    padding-left: 8px;
-    padding-right: 8px;
+  .app-header h1 {
+    font-size: 15px;
   }
 }

@@ -15,9 +15,9 @@ export default function ForgotPassword() {
     setErrorMsg("");
     setLoading(true);
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/update-password`,
-    });
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+  redirectTo: "https://teste.somostati.com.br/update-password",
+});
 
     setLoading(false);
 
